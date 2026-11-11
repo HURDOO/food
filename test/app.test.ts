@@ -108,6 +108,15 @@ describe('food app', () => {
     assert.ok(includesAscii(bytes, 'JFIF'));
   });
 
+  test('the public home lists uploaded pages with their cover photo', async () => {
+    const res = await ctx.app.request('/');
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes(`href="/h/${id}/"`));
+    assert.ok(html.includes('민수 &amp; 밥약'));
+    assert.ok(html.includes(`src="/h/${id}/photo.jpg"`));
+  });
+
   test('the bare link redirects to the folder so relative files resolve', async () => {
     const res = await ctx.app.request(`/h/${id}`);
     assert.equal(res.status, 308);

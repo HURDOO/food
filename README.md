@@ -19,11 +19,7 @@ pnpm page push minsu-1111     # 운영 서버에 올리고 링크 출력. 다시
 
 `pages/`는 실제 이름과 사진이 들어가서 Git과 Docker 이미지에서 빠진다. 페이지는 이미지가 아니라 서버의 `/data`에 올라가므로, 새 페이지를 낼 때 이미지를 다시 배포할 필요가 없다.
 
-`pnpm page push`는 사진을 긴 쪽 1600px로 줄이고(macOS `sips`) 위치정보를 지운 뒤, 그 시점의 `kit.js`·`kit.css`를 같이 올린다. 운영 서버 비밀번호는 macOS 키체인에서 읽는다. 처음 한 번 터미널에서 저장한다(입력이 화면에 안 보임).
-
-```bash
-security add-generic-password -s food-admin -a food.app.hurdoo.kr -w
-```
+`pnpm page push`는 사진을 긴 쪽 1600px로 줄이고(macOS `sips`) 위치정보를 지운 뒤, 그 시점의 `kit.js`·`kit.css`를 같이 올린다. 운영 서버 비밀번호는 프로젝트 폴더의 `password.txt` 한 줄에서 읽는다(Git·Docker 제외, 값은 출력하지 않음). deployd Secrets의 `ADMIN_PASSWORD`와 같은 값이어야 한다.
 
 `--to http://localhost:3000`처럼 로컬·내부망 개발 서버로 올릴 때는 개발용 비밀번호 `dev`를 쓴다.
 
@@ -66,6 +62,7 @@ HTML에 `data-*` 속성만 달면 동작한다. 자세한 건 `src/kit/kit.ts` �
 
 | 경로 | 내용 |
 | --- | --- |
+| `/` | 공개 홈. 올린 밥약 카드 목록 (제목, `og:description`, `og:image` 사진, 올린 날) |
 | `/h/<id>/` | 올린 페이지. 봇과 내가 로그인한 채 연 건 조회수에 안 셈 |
 | `POST /h/<id>/react` | 반응 기록 (kit가 부름) |
 | `/admin` | 올린 페이지 목록, 조회수·반응, 링크 복사, 내리기 |
@@ -85,7 +82,7 @@ HTML에 `data-*` 속성만 달면 동작한다. 자세한 건 `src/kit/kit.ts` �
 
 - 페이지에는 같이 올린 스크립트만 돌 수 있다(CSP `script-src 'self'`). 인라인 스크립트는 막힌다.
 - 사진은 Mac에서 한 번, 서버에서 한 번 더 EXIF(위치정보)를 지운다.
-- 페이지 주소는 무작위 10자, `noindex`. 관리자 쿠키는 HttpOnly·SameSite=Lax(https면 Secure), 다른 사이트에서 온 쓰기 요청은 막는다. 비밀번호는 15분에 10번까지만 틀릴 수 있다.
+- 홈(`/`)에 올린 페이지가 모두 보인다. 링크를 아는 사람만 보게 하려면 페이지를 올리지 말 것. 페이지 주소는 무작위 10자, `noindex`. 관리자 쿠키는 HttpOnly·SameSite=Lax(https면 Secure), 다른 사이트에서 온 쓰기 요청은 막는다. 비밀번호는 15분에 10번까지만 틀릴 수 있다.
 
 ## 배포 (deployd)
 
@@ -95,6 +92,6 @@ HTML에 `data-*` 속성만 달면 동작한다. 자세한 건 `src/kit/kit.ts` �
 2. 처음 한 번 GitHub Actions의 **Bootstrap GHCR package**를 실행한다.
 3. 이 프로젝트를 연 Codex 세션에서 `deploy-project` 스킬로 "배포해줘" → 이미지 publish와 핸드오프 JSON.
 4. deployd 대시보드 **새 앱 배포**에 붙여 넣고 제출한다. 첫 배포는 `ADMIN_PASSWORD`가 없어서 secret preflight에서 멈추는 게 정상이다.
-5. 앱 **Secrets**에 `ADMIN_PASSWORD`를 넣고 다시 배포한다. 같은 값을 Mac 키체인에도 저장한다(위 `security` 명령).
+5. 앱 **Secrets**에 `ADMIN_PASSWORD`를 넣고 다시 배포한다. 같은 값을 Mac의 `password.txt`에도 넣는다.
 
 이미지는 deployd 실행 조건(UID 0, 권한 전부 제거, `no-new-privileges`, 읽기 전용 루트, `/tmp` tmpfs, `/data`만 쓰기)에서 동작한다. 이미지 롤백은 `/data`(올린 페이지)를 되돌리지 않는다.

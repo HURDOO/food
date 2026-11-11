@@ -39,13 +39,49 @@ ${opts.body}
 </html>`;
 }
 
-export const homePage = (cssHref: string) =>
-  shell({
+export interface HomeCard {
+  id: string;
+  title: string;
+  description: string;
+  cover: string | null;
+  createdAt: string;
+}
+
+const fmtDate = (iso: string) =>
+  new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric', day: 'numeric' }).format(new Date(iso));
+
+const FALLBACK_EMOJI = ['🍜', '🍖', '🍣', '🍕', '🥘', '🍛', '🍱', '🥟'];
+
+export function homePage(cssHref: string, cards: HomeCard[]): string {
+  const list = cards.length
+    ? `<ul class="h-grid">${cards
+        .map((card, i) => {
+          const href = `/h/${e(card.id)}/`;
+          const cover = card.cover
+            ? `<img src="${href}${e(card.cover)}" alt="" loading="lazy" decoding="async">`
+            : `<span aria-hidden="true">${FALLBACK_EMOJI[i % FALLBACK_EMOJI.length]}</span>`;
+          return `<li><a class="h-card" href="${href}">
+<div class="h-cover">${cover}</div>
+<div class="h-text">
+<p class="h-title">${e(card.title)}</p>
+${card.description ? `<p class="h-desc">${e(card.description)}</p>` : ''}
+<p class="h-date">${e(fmtDate(card.createdAt))}</p>
+</div>
+</a></li>`;
+        })
+        .join('')}</ul>`
+    : `<div class="a-card a-empty"><p class="a-emoji" aria-hidden="true">🍜</p><p>아직 밥약 기록이 없어요.</p></div>`;
+  return shell({
     title: '은혜 갚는 호랑이',
     cssHref,
-    center: true,
-    body: `<main class="a-lone"><p class="a-emoji" aria-hidden="true">🐯</p><h1 class="a-brand-lg">은혜 갚는 호랑이</h1><p class="a-muted">받은 링크로만 들어올 수 있어요.</p></main>`,
+    body: `<header class="h-hero">
+<p class="a-emoji" aria-hidden="true">🐯</p>
+<h1 class="a-brand-lg">은혜 갚는 호랑이</h1>
+<p class="a-muted">밥 사 준 은혜, 잊지 않고 기록해 둡니다.${cards.length ? ` <b class="h-count">${cards.length}번의 밥약</b>` : ''}</p>
+</header>
+${list}`,
   });
+}
 
 export const notFoundPage = (cssHref: string) =>
   shell({

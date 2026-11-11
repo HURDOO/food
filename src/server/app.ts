@@ -5,7 +5,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import type { Assets } from './assets.ts';
 import { createLoginLimiter, SESSION_COOKIE, SESSION_DAYS, type Auth } from './auth.ts';
-import { checkBundle, contentType, FILE_NAME, fillPlaceholders, MAX_BUNDLE_BYTES, readTitle, type BundleFile } from './bundle.ts';
+import { checkBundle, contentType, FILE_NAME, fillPlaceholders, MAX_BUNDLE_BYTES, readCover, readDescription, readTitle, type BundleFile } from './bundle.ts';
 import type { Config } from './config.ts';
 import { cleanMedia, MediaError } from './media.ts';
 import * as views from './pages.ts';
@@ -94,7 +94,22 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
     }
   });
 
-  app.get('/', (c) => c.html(views.homePage(css())));
+  // 공개 홈: 올린 밥약 페이지 목록. 카드 내용은 각 페이지의 <title>, og:description, og:image에서 뽑는다.
+  app.get('/', (c) => {
+    const cards = store.list().map((meta) => {
+      const html = store.readFile(meta.id, 'index.html')?.data.toString('utf8') ?? '';
+      const cover = readCover(html);
+      return {
+        id: meta.id,
+        title: meta.title,
+        description: readDescription(html),
+        cover: cover && store.hasFile(meta.id, cover) ? cover : null,
+        createdAt: meta.createdAt,
+      };
+    });
+    c.header('Cache-Control', 'no-cache');
+    return c.html(views.homePage(css(), cards.sort((a, b) => b.createdAt.localeCompare(a.createdAt))));
+  });
 
   app.get('/assets/:file', (c) => {
     const file = assets.file(c.req.param('file'));

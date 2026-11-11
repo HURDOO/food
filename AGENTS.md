@@ -17,14 +17,14 @@
 - 서버 CSP 때문에 인라인 `<script>`와 `onclick` 같은 속성은 동작하지 않는다. 스크립트는 `script.js` 파일로 둔다.
 - 외부 스크립트·이미지·영상은 못 쓴다. 글꼴만 Google Fonts와 jsDelivr(눈누 글꼴 등)에서 받을 수 있다.
 - 파일은 한 폴더에 평평하게 둔다. 이름은 소문자·숫자·`-`·`_`, 확장자는 html css js json txt jpg jpeg png gif svg mp3 woff2. 최대 40개, 파일당 8MB, 합계 28MB. `kit.js`·`kit.css`는 공용 도구 이름이라 쓰지 않는다.
-- `index.html` 안의 `%PAGE_URL%`(끝에 `/` 포함)과 `%VIEWS%`는 서버가 채운다. 카톡 미리보기 사진은 `<meta property="og:image" content="%PAGE_URL%photo.jpg">`.
+- `index.html` 안의 `%PAGE_URL%`(끝에 `/` 포함)과 `%VIEWS%`는 서버가 채운다. 카톡 미리보기 사진은 `<meta property="og:image" content="%PAGE_URL%photo.jpg">`. 공개 홈(`/`) 카드도 `<title>`, `og:description`, 같은 폴더 사진을 가리키는 `og:image`를 그대로 쓴다.
 - 스토리형이면 `<main data-story>` 안에 `.scene`을 둔다. 설계 크기 280×580이고 화면에 맞춰 통째로 확대된다. 스토리형이 아니어도 된다.
 - 반응을 남기고 싶으면 `data-react="키"`를 단다. 키는 소문자·숫자·`-`·`_` 24자 이내, 페이지당 20개까지. 관리 화면에 키 이름이 그대로 보이니 알아보기 쉽게 짓는다.
 
 ## 개인정보
 
 - 실제 이름, 사진, 메시지는 `pages/`(Git 제외)와 서버 `/data`에만 둔다. `examples/`, `test/`, 문서, 커밋, 이미지에는 넣지 않는다.
-- 운영 올리기 비밀번호는 macOS 키체인(서비스 `food-admin`, 계정 `food.app.hurdoo.kr`)에 있다. 값을 읽어 출력하거나 채팅·파일에 쓰지 않는다. 없으면 사용자에게 직접 `security add-generic-password -s food-admin -a food.app.hurdoo.kr -w`를 실행해 달라고 한다.
+- 운영 올리기 비밀번호는 프로젝트 폴더의 `password.txt`(Git·Docker 제외)에 있고 `pnpm page push`가 읽는다. 값을 열어 보거나 출력하거나 채팅·다른 파일에 옮기지 않는다. 없으면 사용자에게 직접 넣어 달라고 한다.
 
 ## 서버·공용 도구를 고칠 때
 

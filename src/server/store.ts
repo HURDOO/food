@@ -130,6 +130,11 @@ export class FileStore {
     }
   }
 
+  hasFile(id: string, name: string): boolean {
+    const meta = this.get(id);
+    return !!meta && FILE_NAME.test(name) && existsSync(join(this.pagesDir, id, meta.bundle, name));
+  }
+
   recordView(id: string): PageMeta | null {
     return this.mutate(id, (m) => ({ ...m, views: m.views + 1 }));
   }

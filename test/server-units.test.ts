@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createAuth, createLoginLimiter } from '../src/server/auth.ts';
-import { checkBundle, fillPlaceholders, MAX_FILES, readTitle, type BundleFile } from '../src/server/bundle.ts';
+import { checkBundle, fillPlaceholders, MAX_FILES, readCover, readDescription, readTitle, type BundleFile } from '../src/server/bundle.ts';
 import { loadConfig } from '../src/server/config.ts';
 import { cleanMedia, MediaError, stripJpegMetadata, stripPngMetadata } from '../src/server/media.ts';
 import { FileStore, MAX_REACTION_KEYS } from '../src/server/store.ts';
@@ -62,6 +62,17 @@ test('readTitle and fillPlaceholders', () => {
   assert.equal(readTitle('<title>\n 민수 &amp; 나 </title>'), '민수 & 나');
   assert.equal(readTitle('<p>no title</p>'), '제목 없음');
   assert.equal(fillPlaceholders('<a href="%PAGE_URL%x.jpg">%VIEWS% %VIEWS%</a>', { pageUrl: 'https://f/h/a/', views: 7 }), '<a href="https://f/h/a/x.jpg">7 7</a>');
+});
+
+test('readCover and readDescription pick home card details from meta tags', () => {
+  assert.equal(readCover('<meta property="og:image" content="%PAGE_URL%photo.jpg">'), 'photo.jpg');
+  assert.equal(readCover('<meta content="./cover.png" property="og:image">'), 'cover.png');
+  assert.equal(readCover('<!-- <meta property="og:image" content="%PAGE_URL%photo.jpg"> -->'), null);
+  assert.equal(readCover('<meta property="og:image" content="https://evil.test/x.jpg">'), null);
+  assert.equal(readCover('<meta property="og:image" content="%PAGE_URL%style.css">'), null);
+  assert.equal(readDescription('<meta property="og:description" content="입장 전 &amp; 선글라스">'), '입장 전 & 선글라스');
+  assert.equal(readDescription('<meta name="description" content=\'고마워요\'>'), '고마워요');
+  assert.equal(readDescription('<p>none</p>'), '');
 });
 
 test('sessions verify only untampered, unexpired tokens', () => {

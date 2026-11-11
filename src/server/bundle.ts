@@ -47,17 +47,44 @@ export function checkBundle(files: readonly BundleFile[]): string[] {
   return problems;
 }
 
-/** index.html의 <title>을 관리 화면 목록 제목으로 쓴다. */
-export function readTitle(html: string): string {
-  const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
-  const raw = (m?.[1] ?? '').replace(/\s+/g, ' ').trim();
-  const text = raw
+const decodeEntities = (s: string) =>
+  s
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&');
-  return text.slice(0, 80) || '제목 없음';
+
+const squash = (s: string) => decodeEntities(s.replace(/\s+/g, ' ').trim());
+
+/** index.html의 <title>을 목록 제목으로 쓴다. */
+export function readTitle(html: string): string {
+  const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  return squash(m?.[1] ?? '').slice(0, 80) || '제목 없음';
+}
+
+/** <meta property|name="..." content="...">의 content. 속성 순서는 상관없다. */
+function readMetaContent(html: string, names: readonly string[]): string {
+  for (const tag of html.replace(/<!--[\s\S]*?-->/g, '').match(/<meta\b[^>]*>/gi) ?? []) {
+    const key = /\b(?:property|name)\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1]?.toLowerCase();
+    if (!key || !names.includes(key)) continue;
+    const content = /\bcontent\s*=\s*"([^"]*)"|\bcontent\s*=\s*'([^']*)'/i.exec(tag);
+    if (content) return squash(content[1] ?? content[2] ?? '');
+  }
+  return '';
+}
+
+/** 홈 카드 설명. og:description, 없으면 description. */
+export function readDescription(html: string): string {
+  return readMetaContent(html, ['og:description', 'description']).slice(0, 120);
+}
+
+const IMAGE_FILE = /\.(jpe?g|png|gif|svg)$/;
+
+/** 홈 카드 사진. 같은 묶음 안의 파일을 가리키는 og:image(`%PAGE_URL%photo.jpg`)만 쓴다. */
+export function readCover(html: string): string | null {
+  const src = readMetaContent(html, ['og:image']).replace(/^%PAGE_URL%/, '').replace(/^\.\//, '');
+  return FILE_NAME.test(src) && IMAGE_FILE.test(src) ? src : null;
 }
 
 /**
