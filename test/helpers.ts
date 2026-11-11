@@ -17,3 +17,20 @@ export function fakeJpeg({ withExif = true } = {}): Uint8Array<ArrayBuffer> {
 }
 
 export const includesAscii = (buf: Uint8Array, text: string) => Buffer.from(buf).includes(Buffer.from(text, 'latin1'));
+
+// 테스트용 가짜 PNG. 청크 구조만 맞추고 CRC는 확인하지 않는다.
+const chunk = (type: string, payload: number[]) => {
+  const len = payload.length;
+  return [(len >>> 24) & 0xff, (len >>> 16) & 0xff, (len >>> 8) & 0xff, len & 0xff, ...ascii(type), ...payload, 0, 0, 0, 0];
+};
+
+export function fakePng(): Uint8Array<ArrayBuffer> {
+  return new Uint8Array([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+    ...chunk('IHDR', [0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0]),
+    ...chunk('tEXt', ascii('Comment\0secret note')),
+    ...chunk('eXIf', ascii('GPS 37.5894N')),
+    ...chunk('IDAT', [1, 2, 3, 4]),
+    ...chunk('IEND', []),
+  ]);
+}

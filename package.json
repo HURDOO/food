@@ -2,7 +2,7 @@
   "name": "food",
   "private": true,
   "version": "0.1.0",
-  "description": "밥약 감사 스토리에 붙이는 선배 헌정관 (은혜 갚는 호랑이)",
+  "description": "밥약 고마움을 전하는 손수 만든 페이지들 (은혜 갚는 호랑이)",
   "type": "module",
   "packageManager": "pnpm@11.12.0",
   "engines": {
@@ -12,6 +12,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "start": "node dist/server.mjs",
+    "page": "node scripts/page.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --test \"test/**/*.test.ts\"",
     "check": "pnpm typecheck && pnpm test && pnpm build"

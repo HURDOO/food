@@ -3,10 +3,10 @@
   "appId": "food",
   "imageRepository": "ghcr.io/hurdoo/food",
   "displayName": "은혜 갚는 호랑이",
-  "description": "밥약 감사 스토리에 붙이는 선배 헌정관",
+  "description": "밥약 고마움을 전하는 손수 만든 페이지",
   "containerPort": 3000,
   "healthPath": "/healthz",
-  "access": "private",
+  "access": "public",
   "dataEnabled": true,
   "resources": {
     "memoryMiB": 256,

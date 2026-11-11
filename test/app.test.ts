@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
@@ -11,14 +11,14 @@ import { FileStore } from '../src/server/store.ts';
 import { fakeJpeg, includesAscii } from './helpers.ts';
 
 const PASSWORD = 'correct horse battery';
+const BROWSER = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Instagram 300.0';
 
 const assets: Assets = {
   href: (name) => `/assets/${name}`,
-  inlineTributeScript: () => ({ code: 'void 0', hash: 'dGVzdA==' }),
   file: (name) => (name === 'admin.css' ? { body: Buffer.from('a{}'), type: 'text/css; charset=utf-8' } : null),
 };
 
-function setup() {
+function setup(overrides: Partial<Config> = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'food-app-'));
   const config: Config = {
     production: true,
@@ -29,25 +29,29 @@ function setup() {
     assetsDir: '',
     adminPassword: PASSWORD,
     secureCookies: true,
+    devPageDirs: [],
+    kitDir: '',
+    ...overrides,
   };
   const store = new FileStore(dir);
   const app = createApp({ config, store, auth: createAuth(PASSWORD, store.sessionKey()), assets });
   return { dir, store, app };
 }
 
-function tributeForm(overrides: Record<string, string> = {}, photo: Uint8Array<ArrayBuffer> | null = null) {
+const INDEX = '<!doctype html><title>민수 &amp; 밥약</title><meta property="og:image" content="%PAGE_URL%photo.jpg"><p>방문자 %VIEWS%</p><script src="kit.js"></script>';
+
+function bundle(files: Record<string, string | Uint8Array<ArrayBuffer>>) {
   const fd = new FormData();
-  const fields = { senior: '김호랑', junior: '이새내', major: '경영학과', year: '22', menu: '마라탕', place: '참살이길', date: '2026-11-10', price: '38000', note: '감사합니다', level: '2', ...overrides };
-  for (const [k, v] of Object.entries(fields)) fd.set(k, v);
-  if (photo) fd.set('photo', new File([photo], 'photo.jpg', { type: 'image/jpeg' }));
+  for (const [name, data] of Object.entries(files)) fd.append('files', new Blob([data]), name);
   return fd;
 }
+
+const bearer = (password = PASSWORD) => ({ authorization: `Bearer ${password}` });
 
 describe('food app', () => {
   let ctx: ReturnType<typeof setup>;
   let cookie = '';
   let id = '';
-  const admin = (init: RequestInit = {}) => ({ ...init, headers: { ...(init.headers as Record<string, string>), cookie } });
 
   before(() => {
     ctx = setup();
@@ -60,153 +64,207 @@ describe('food app', () => {
     assert.equal(await res.text(), 'ok');
   });
 
-  test('admin pages and API require login', async () => {
-    const page = await ctx.app.request('/admin');
-    assert.equal(page.status, 303);
-    assert.equal(page.headers.get('location'), '/admin/login');
-    const nested = await ctx.app.request('/admin/new');
-    assert.equal(nested.status, 303);
-    const api = await ctx.app.request('/admin/api/tributes', { method: 'POST', body: tributeForm() });
-    assert.equal(api.status, 401);
+  test('home and unknown pages render without leaking anything', async () => {
+    const home = await ctx.app.request('/');
+    assert.equal(home.status, 200);
+    assert.match(home.headers.get('content-security-policy') ?? '', /script-src 'self'/);
+    const missing = await ctx.app.request('/h/AAAAAAAAAA/');
+    assert.equal(missing.status, 404);
   });
 
-  test('wrong password is rejected', async () => {
-    const res = await ctx.app.request('/admin/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: 'password=nope',
-    });
-    assert.equal(res.status, 401);
-    assert.match(await res.text(), /비밀번호가 맞지 않아요/);
+  test('uploading needs the admin password', async () => {
+    const files = bundle({ 'index.html': INDEX });
+    assert.equal((await ctx.app.request('/api/pages', { method: 'POST', body: files })).status, 401);
+    assert.equal((await ctx.app.request('/api/pages', { method: 'POST', body: files, headers: bearer('wrong') })).status, 401);
   });
 
-  test('correct password sets a secure, http-only session cookie', async () => {
-    const res = await ctx.app.request('/admin/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: `password=${encodeURIComponent(PASSWORD)}`,
-    });
-    assert.equal(res.status, 303);
-    const setCookie = res.headers.get('set-cookie') ?? '';
-    assert.match(setCookie, /bt_admin=/);
-    assert.match(setCookie, /HttpOnly/);
-    assert.match(setCookie, /Secure/);
-    assert.match(setCookie, /SameSite=Lax/);
-    cookie = setCookie.split(';')[0] as string;
-    const list = await ctx.app.request('/admin', admin());
-    assert.equal(list.status, 200);
-    assert.match(await list.text(), /아직 만든 헌정관이 없어요/);
-  });
-
-  test('creating a tribute validates fields', async () => {
-    const res = await ctx.app.request('/admin/api/tributes', admin({ method: 'POST', body: tributeForm({ senior: '', year: '2022' }) }));
+  test('a bundle without index.html or with bad names is refused with reasons', async () => {
+    const res = await ctx.app.request('/api/pages', { method: 'POST', headers: bearer(), body: bundle({ 'style.css': 'p{}', 'Bad Name.css': 'x' }) });
     assert.equal(res.status, 400);
-    const body = (await res.json()) as { errors: Record<string, string> };
-    assert.ok(body.errors.senior);
-    assert.ok(body.errors.year);
+    const body = (await res.json()) as { problems: string[] };
+    assert.ok(body.problems.some((p) => p.includes('index.html')));
+    assert.ok(body.problems.some((p) => p.includes('Bad Name.css')));
+    const broken = await ctx.app.request('/api/pages', { method: 'POST', headers: bearer(), body: bundle({ 'index.html': INDEX, 'photo.jpg': new TextEncoder().encode('nope') }) });
+    assert.equal(broken.status, 400);
   });
 
-  test('creating a tribute rejects non-JPEG photos', async () => {
-    const res = await ctx.app.request('/admin/api/tributes', admin({ method: 'POST', body: tributeForm({}, new TextEncoder().encode('<svg/>')) }));
-    assert.equal(res.status, 400);
-    assert.ok(((await res.json()) as { errors: Record<string, string> }).errors.photo);
-  });
-
-  test('creating a tribute stores the photo without location metadata', async () => {
-    const res = await ctx.app.request('/admin/api/tributes', admin({ method: 'POST', body: tributeForm({}, fakeJpeg()) }));
+  test('a page is uploaded, photos lose their EXIF, and the link works', async () => {
+    const res = await ctx.app.request('/api/pages', {
+      method: 'POST',
+      headers: bearer(),
+      body: bundle({ 'index.html': INDEX, 'style.css': 'p{color:red}', 'photo.jpg': fakeJpeg(), 'kit.js': 'void 0' }),
+    });
     assert.equal(res.status, 201);
-    id = ((await res.json()) as { id: string }).id;
-    const stored = ctx.store.get(id);
-    assert.ok(stored?.photo);
-    const photo = await ctx.app.request(`/p/${stored.photo}`);
+    const body = (await res.json()) as { id: string; url: string };
+    id = body.id;
+    assert.match(id, /^[A-Za-z0-9]{10}$/);
+    assert.equal(body.url, `https://food.example.test/h/${id}/`);
+
+    const photo = await ctx.app.request(`/h/${id}/photo.jpg`);
     assert.equal(photo.status, 200);
     assert.equal(photo.headers.get('content-type'), 'image/jpeg');
     const bytes = new Uint8Array(await photo.arrayBuffer());
     assert.ok(!includesAscii(bytes, 'GPS'));
+    assert.ok(includesAscii(bytes, 'JFIF'));
   });
 
-  test('tribute page renders all scenes with an inline script allowed by CSP', async () => {
-    const res = await ctx.app.request(`/h/${id}`, { headers: { 'user-agent': 'Mozilla/5.0 (iPhone) Instagram 300.0' } });
+  test('the bare link redirects to the folder so relative files resolve', async () => {
+    const res = await ctx.app.request(`/h/${id}`);
+    assert.equal(res.status, 308);
+    assert.equal(res.headers.get('location'), `/h/${id}/`);
+    const index = await ctx.app.request(`/h/${id}/index.html`);
+    assert.equal(index.status, 308);
+  });
+
+  test('the page fills placeholders, counts real visitors, and locks scripts to its own files', async () => {
+    const res = await ctx.app.request(`/h/${id}/`, { headers: { 'user-agent': BROWSER } });
     assert.equal(res.status, 200);
     const html = await res.text();
-    assert.match(html, /<title>김호랑 선배님 헌정관<\/title>/);
-    assert.equal(html.match(/<section class="screen/g)?.length, 6);
-    assert.match(html, /property="og:image" content="https:\/\/food\.example\.test\/p\//);
-    assert.match(res.headers.get('content-security-policy') ?? '', /script-src 'self' 'sha256-dGVzdA=='/);
+    assert.ok(html.includes(`content="https://food.example.test/h/${id}/photo.jpg"`));
+    assert.ok(html.includes('방문자 1'));
+    const csp = res.headers.get('content-security-policy') ?? '';
+    assert.match(csp, /script-src 'self'(;|$)/);
+    assert.match(csp, /frame-ancestors 'none'/);
     assert.equal(res.headers.get('cache-control'), 'no-store');
-    assert.equal(ctx.store.get(id)?.stats.views, 1);
+    assert.match(res.headers.get('x-robots-tag') ?? '', /noindex/);
+
+    await ctx.app.request(`/h/${id}/`, { headers: { 'user-agent': 'facebookexternalhit/1.1' } });
+    await ctx.app.request(`/h/${id}/`, { headers: { 'user-agent': 'kakaotalk-scrap/1.0' } });
+    assert.equal(ctx.store.get(id)?.views, 1, 'link preview bots are not counted');
   });
 
-  test('views from the owner and link-preview bots are not counted', async () => {
-    await ctx.app.request(`/h/${id}`, admin());
-    await ctx.app.request(`/h/${id}`, { headers: { 'user-agent': 'facebookexternalhit/1.1' } });
-    await ctx.app.request(`/h/${id}`, { headers: { 'user-agent': 'kakaotalk-scrap/1.0' } });
-    assert.equal(ctx.store.get(id)?.stats.views, 1);
-  });
-
-  test('senior reactions are recorded', async () => {
-    const yes = await ctx.app.request(`/h/${id}/yes`, { method: 'POST' });
-    assert.equal(yes.status, 204);
-    const bad = await ctx.app.request(`/h/${id}/coupon`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ choice: '현금' }) });
-    assert.equal(bad.status, 400);
-    const good = await ctx.app.request(`/h/${id}/coupon`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ choice: '케이크 한 조각' }),
-    });
-    assert.equal(good.status, 204);
-    const t = ctx.store.get(id);
-    assert.ok(t?.stats.agreedAt);
-    assert.equal(t?.stats.coupon, '케이크 한 조각');
-    const share = await ctx.app.request(`/admin/t/${id}`, admin());
-    assert.match(await share.text(), /케이크 한 조각/);
-  });
-
-  test('cross-site POSTs are refused', async () => {
-    const res = await ctx.app.request(`/admin/api/tributes/${id}/delete`, admin({ method: 'POST', headers: { cookie, origin: 'https://evil.example' } }));
-    assert.equal(res.status, 403);
-    assert.ok(ctx.store.get(id));
-  });
-
-  test('editing keeps reactions and can remove the photo', async () => {
-    const fd = tributeForm({ menu: '순대국밥', level: '3' });
-    fd.set('removePhoto', '1');
-    const res = await ctx.app.request(`/admin/api/tributes/${id}`, admin({ method: 'POST', body: fd }));
-    assert.equal(res.status, 200);
-    const t = ctx.store.get(id);
-    assert.equal(t?.menu, '순대국밥');
-    assert.equal(t?.photo, null);
-    assert.equal(t?.stats.coupon, '케이크 한 조각');
-  });
-
-  test('user input is escaped on public and admin pages', async () => {
-    const res = await ctx.app.request('/admin/api/tributes', admin({ method: 'POST', body: tributeForm({ senior: '<b>x</b>', note: '"><img src=x>' }) }));
-    const evilId = ((await res.json()) as { id: string }).id;
-    const page = await (await ctx.app.request(`/h/${evilId}`)).text();
-    assert.ok(!page.includes('<b>x</b>'));
-    assert.ok(!page.includes('<img src=x>'));
-    const list = await (await ctx.app.request('/admin', admin())).text();
-    assert.ok(!list.includes('<b>x</b>'));
-  });
-
-  test('deleting removes the tribute', async () => {
-    const res = await ctx.app.request(`/admin/api/tributes/${id}/delete`, admin({ method: 'POST' }));
-    assert.equal(res.status, 200);
-    const gone = await ctx.app.request(`/h/${id}`);
-    assert.equal(gone.status, 404);
-    assert.match(await gone.text(), /헌정관을 찾을 수 없어요/);
-  });
-
-  test('repeated wrong passwords are throttled', async () => {
-    let last = 0;
-    for (let i = 0; i < 11; i++) {
-      const res = await ctx.app.request('/admin/login', {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: 'password=guess',
-      });
-      last = res.status;
+  test('page files are served with their type and revalidate cheaply', async () => {
+    const css = await ctx.app.request(`/h/${id}/style.css`);
+    assert.equal(css.status, 200);
+    assert.match(css.headers.get('content-type') ?? '', /text\/css/);
+    const etag = css.headers.get('etag') ?? '';
+    assert.ok(etag);
+    const again = await ctx.app.request(`/h/${id}/style.css`, { headers: { 'if-none-match': etag } });
+    assert.equal(again.status, 304);
+    for (const path of [`/h/${id}/meta.json`, `/h/${id}/..%2Fmeta.json`, `/h/${id}/missing.css`, `/h/${id}/Style.css`]) {
+      assert.equal((await ctx.app.request(path)).status, 404, path);
     }
-    assert.equal(last, 429);
   });
+
+  test('reactions are recorded from visitors but not from bots, and bad input is refused', async () => {
+    const send = (body: unknown, headers: Record<string, string> = {}) =>
+      ctx.app.request(`/h/${id}/react`, { method: 'POST', headers: { 'content-type': 'application/json', 'user-agent': BROWSER, ...headers }, body: JSON.stringify(body) });
+    assert.equal((await send({ key: 'again', value: '콜' })).status, 204);
+    assert.equal((await send({ key: 'no', value: '3번 도망' })).status, 204);
+    assert.equal((await send({ key: 'again', value: '봇' }, { 'user-agent': 'Googlebot' })).status, 204);
+    assert.equal((await send({ key: 'Not OK' })).status, 400);
+    assert.equal((await send({ key: 'again' }, { origin: 'https://evil.example' })).status, 403);
+    const big = await ctx.app.request(`/h/${id}/react`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a', value: 'x'.repeat(2000) }) });
+    assert.equal(big.status, 413);
+    assert.equal((await ctx.app.request('/h/AAAAAAAAAA/react', { method: 'POST', body: '{}' })).status, 404);
+    const reactions = ctx.store.get(id)?.reactions ?? {};
+    assert.equal(reactions.again?.value, '콜');
+    assert.equal(reactions.again?.count, 1);
+    assert.equal(reactions.no?.value, '3번 도망');
+  });
+
+  test('re-uploading keeps the same link, views and reactions', async () => {
+    const res = await ctx.app.request(`/api/pages/${id}`, { method: 'PUT', headers: bearer(), body: bundle({ 'index.html': '<title>고친 판</title><p>v2 %VIEWS%</p>' }) });
+    assert.equal(res.status, 200);
+    assert.equal(((await res.json()) as { id: string }).id, id);
+    const html = await (await ctx.app.request(`/h/${id}/`, { headers: { 'user-agent': BROWSER } })).text();
+    assert.ok(html.includes('v2 2'));
+    assert.equal((await ctx.app.request(`/h/${id}/photo.jpg`)).status, 404, 'files from the old upload are gone');
+    assert.equal(ctx.store.get(id)?.reactions.again?.value, '콜');
+    assert.equal((await ctx.app.request('/api/pages/AAAAAAAAAA', { method: 'PUT', headers: bearer(), body: bundle({ 'index.html': INDEX }) })).status, 404);
+  });
+
+  test('admin pages need a login', async () => {
+    const res = await ctx.app.request('/admin');
+    assert.equal(res.status, 303);
+    assert.equal(res.headers.get('location'), '/admin/login');
+    assert.equal((await ctx.app.request(`/admin/api/pages/${id}/delete`, { method: 'POST' })).status, 401);
+    const wrong = await ctx.app.request('/admin/login', { method: 'POST', body: new URLSearchParams({ password: 'nope' }) });
+    assert.equal(wrong.status, 401);
+  });
+
+  test('login sets a secure session cookie and the list shows pages with reactions', async () => {
+    const res = await ctx.app.request('/admin/login', { method: 'POST', body: new URLSearchParams({ password: PASSWORD }) });
+    assert.equal(res.status, 303);
+    const setCookie = res.headers.get('set-cookie') ?? '';
+    assert.match(setCookie, /HttpOnly/);
+    assert.match(setCookie, /Secure/);
+    assert.match(setCookie, /SameSite=Lax/);
+    cookie = setCookie.split(';')[0] ?? '';
+
+    const list = await ctx.app.request('/admin', { headers: { cookie } });
+    assert.equal(list.status, 200);
+    const html = await list.text();
+    assert.ok(html.includes('고친 판'));
+    assert.ok(html.includes(`https://food.example.test/h/${id}/`));
+    assert.ok(html.includes('조회 2'));
+    assert.ok(html.includes('3번 도망'));
+  });
+
+  test('my own visits and taps are not counted', async () => {
+    const before = ctx.store.get(id);
+    await ctx.app.request(`/h/${id}/`, { headers: { cookie, 'user-agent': BROWSER } });
+    await ctx.app.request(`/h/${id}/react`, { method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify({ key: 'mine', value: 'x' }) });
+    const after = ctx.store.get(id);
+    assert.equal(after?.views, before?.views);
+    assert.equal(after?.reactions.mine, undefined);
+  });
+
+  test('admin output escapes titles and reaction values', async () => {
+    const res = await ctx.app.request('/api/pages', { method: 'POST', headers: bearer(), body: bundle({ 'index.html': '<title>&lt;img src=x onerror=alert(1)&gt;</title>' }) });
+    const evil = ((await res.json()) as { id: string }).id;
+    ctx.store.recordReaction(evil, 'xss', '<script>alert(1)</script>');
+    const html = await (await ctx.app.request('/admin', { headers: { cookie } })).text();
+    assert.ok(!html.includes('<img src=x'));
+    assert.ok(!html.includes('<script>alert(1)'));
+    assert.ok(html.includes('&lt;img src=x'));
+    ctx.store.delete(evil);
+  });
+
+  test('deleting takes the page down', async () => {
+    const res = await ctx.app.request(`/admin/api/pages/${id}/delete`, { method: 'POST', headers: { cookie } });
+    assert.equal(res.status, 200);
+    assert.equal((await ctx.app.request(`/h/${id}/`)).status, 404);
+    assert.equal((await ctx.app.request(`/h/${id}/style.css`)).status, 404);
+  });
+
+  test('dev preview routes do not exist in production', async () => {
+    assert.equal((await ctx.app.request('/dev/')).status, 404);
+    assert.equal((await ctx.app.request('/dev/sample/')).status, 404);
+  });
+});
+
+test('dev preview serves local page folders with the current kit', async () => {
+  const pages = mkdtempSync(join(tmpdir(), 'food-pages-'));
+  const kit = mkdtempSync(join(tmpdir(), 'food-kit-'));
+  mkdirSync(join(pages, 'minsu'));
+  writeFileSync(join(pages, 'minsu', 'index.html'), '<title>민수</title><p>%VIEWS%</p>');
+  writeFileSync(join(pages, 'minsu', 'style.css'), 'p{}');
+  writeFileSync(join(kit, 'kit.js'), 'window.kit={}');
+  const ctx = setup({ production: false, devPageDirs: [pages], kitDir: kit, baseUrl: 'http://192.168.0.2:3000' });
+  try {
+    const index = await ctx.app.request('/dev/');
+    assert.ok((await index.text()).includes('/dev/minsu/'));
+    const page = await ctx.app.request('/dev/minsu/');
+    assert.equal(page.status, 200);
+    assert.ok((await page.text()).includes('<p>0</p>'));
+    assert.equal((await ctx.app.request('/dev/minsu/kit.js')).status, 200);
+    assert.equal((await ctx.app.request('/dev/minsu/style.css')).status, 200);
+    assert.equal((await ctx.app.request('/dev/minsu/nope.css')).status, 404);
+    assert.equal((await ctx.app.request('/dev/..%2Fminsu/')).status, 404);
+    assert.equal((await ctx.app.request('/dev/minsu')).status, 303);
+  } finally {
+    for (const d of [ctx.dir, pages, kit]) rmSync(d, { recursive: true, force: true });
+  }
+});
+
+test('repeated wrong upload passwords are throttled', async () => {
+  const ctx = setup();
+  try {
+    for (let i = 0; i < 10; i++) await ctx.app.request('/api/pages', { method: 'POST', headers: bearer('wrong') });
+    const res = await ctx.app.request('/api/pages', { method: 'POST', headers: bearer(), body: bundle({ 'index.html': INDEX }) });
+    assert.equal(res.status, 429);
+  } finally {
+    rmSync(ctx.dir, { recursive: true, force: true });
+  }
 });

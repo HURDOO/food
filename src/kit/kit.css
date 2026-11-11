@@ -1,0 +1,394 @@
+/* 페이지 공용 도구 스타일. 페이지를 올릴 때 kit.css로 같이 들어간다.
+   무대(data-story)와 장면(.scene)의 뼈대, 그리고 표지·도망 버튼 같은 재료(.k-*)만 담는다.
+   색과 글꼴은 변수라서 페이지 style.css에서 바꿔 쓸 수 있다.
+   재료가 쓰는 글꼴(Black Han Sans 등)은 페이지 <head>에서 불러온다. */
+:root {
+  --k-ink: #141011;
+  --k-white: #ffffff;
+  --k-black: #000000;
+  --k-yellow: #ffe600;
+  --k-pink: #ff4fa0;
+  --k-violet: #7b2bff;
+  --k-crimson: #9e1530;
+  --k-night: #0b0a3b;
+  --k-lav: #bdbdff;
+  --k-seal: #d7261e;
+  --k-grey: #c3c3c3;
+  --k-grey-dk: #3a3a3a;
+  --k-led: #39ff14;
+  --k-led-bd: #555555;
+  --k-backdrop: #07062a;
+  --k-shade: rgba(0, 0, 0, 0.4);
+  /* 꽃가루 색 */
+  --k-c1: var(--k-yellow);
+  --k-c2: var(--k-white);
+  --k-c3: var(--k-pink);
+  --k-c4: var(--k-violet);
+  --k-c5: var(--k-ink);
+
+  --k-body: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+  --k-display: 'Black Han Sans', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --k-mono: 'Nanum Gothic Coding', ui-monospace, Menlo, monospace;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- 무대 ---------- */
+html.k-story-page,
+html.k-story-page body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html.k-story-page body {
+  background: var(--k-backdrop);
+  font-family: var(--k-body);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+html.k-js [data-story] {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html.k-js [data-story].k-framed {
+  border-radius: 26px;
+  box-shadow: 0 30px 60px -20px var(--k-shade);
+}
+html.k-js [data-story] > .scene {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+html.k-js [data-story] > .scene.is-on {
+  display: flex;
+  animation: k-scene-in 0.22s ease-out;
+}
+@keyframes k-scene-in {
+  from {
+    opacity: 0.4;
+    transform: scale(0.985);
+  }
+}
+/* 스크립트가 안 돌면 장면을 세로로 쌓아서 보여 준다 */
+html:not(.k-js) [data-story] {
+  display: grid;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+}
+html:not(.k-js) [data-story] > .scene {
+  width: 280px;
+  min-height: 580px;
+  border-radius: 29px;
+}
+
+/* ---------- 장면 ---------- */
+.scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 16px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-family: var(--k-body);
+  color: var(--k-ink);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  --k-bar: rgba(255, 255, 255, 0.38);
+  --k-bar-on: var(--k-white);
+}
+.scene *,
+.scene *::before,
+.scene *::after {
+  box-sizing: border-box;
+}
+.scene.light {
+  --k-bar: rgba(0, 0, 0, 0.14);
+  --k-bar-on: var(--k-ink);
+}
+.scene :is(p, h1, h2, h3, h4, ul, ol, figure, blockquote) {
+  margin: 0;
+}
+.scene button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.scene :focus-visible {
+  outline: 2px solid var(--k-pink);
+  outline-offset: 2px;
+}
+.k-bars {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+  pointer-events: none;
+}
+.k-bars i {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--k-bar);
+}
+.k-bars i.done,
+.k-bars i.on {
+  background: var(--k-bar-on);
+}
+
+/* ---------- 표지 재료 ---------- */
+
+/* 밤하늘 별무늬 배경 */
+.k-night {
+  background-color: var(--k-night);
+  background-image: radial-gradient(circle, var(--k-white) 0 1px, transparent 1.5px), radial-gradient(circle, var(--k-yellow) 0 1px, transparent 1.5px);
+  background-size: 36px 36px, 58px 58px;
+  background-position: 0 0, 17px 23px;
+  color: var(--k-white);
+}
+
+/* 흐르는 띠 글씨: <div class="k-marquee"><div><span>글</span><span>글</span></div></div> */
+.k-marquee {
+  align-self: stretch;
+  margin: 0 -16px;
+  background: var(--k-crimson);
+  color: var(--k-yellow);
+  font: 700 12px/1 var(--k-body);
+  padding: 7px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.k-marquee > div {
+  display: inline-flex;
+  animation: k-marquee 16s linear infinite;
+}
+.k-marquee span {
+  padding-right: 28px;
+}
+@keyframes k-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* 반짝이: <div class="k-sparkles"><i style="left:8%;top:17%">✦</i>…</div> */
+.k-sparkles i {
+  position: absolute;
+  font-style: normal;
+  font-size: 15px;
+  color: var(--k-yellow);
+  animation: k-twinkle 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.k-sparkles i:nth-child(2n) {
+  animation-delay: 0.5s;
+  color: var(--k-white);
+}
+.k-sparkles i:nth-child(3n) {
+  animation-delay: 1s;
+}
+@keyframes k-twinkle {
+  50% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+}
+
+/* 워드아트 제목 */
+.k-wordart {
+  font: 400 42px/1.08 var(--k-display);
+  background: linear-gradient(180deg, var(--k-white) 8%, var(--k-yellow) 38%, var(--k-pink) 70%, var(--k-violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--k-black);
+  filter: drop-shadow(3px 4px 0 var(--k-black));
+  transform: skewY(-5deg) rotate(-2deg);
+  max-width: 100%;
+}
+
+/* 기울어진 노란 딱지 */
+.k-tag {
+  background: var(--k-yellow);
+  color: var(--k-night);
+  font: 700 14px/1 var(--k-body);
+  padding: 6px 12px;
+  transform: rotate(-3deg);
+  box-shadow: 3px 3px 0 var(--k-pink);
+}
+
+/* 공사장 줄무늬 경고문 */
+.k-warn {
+  background: var(--k-yellow);
+  color: var(--k-ink);
+  font: 700 12.5px/1.55 var(--k-body);
+  padding: 9px 11px;
+  text-align: left;
+  border: 6px solid transparent;
+  border-image: repeating-linear-gradient(45deg, var(--k-ink) 0 7px, var(--k-yellow) 7px 14px) 6;
+}
+
+/* 윈도우 95 버튼 */
+.k-btn95 {
+  background: var(--k-grey);
+  color: var(--k-black);
+  font: 700 14px/1.2 var(--k-body);
+  padding: 9px 18px;
+  border: 2px solid;
+  border-color: var(--k-white) var(--k-grey-dk) var(--k-grey-dk) var(--k-white);
+  box-shadow: 1px 1px 0 var(--k-black);
+  cursor: pointer;
+}
+.k-btn95:active {
+  border-color: var(--k-grey-dk) var(--k-white) var(--k-white) var(--k-grey-dk);
+}
+
+/* LED 방문자 카운터: <span class="k-counter" data-counter="6">%VIEWS%</span> */
+.k-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.k-counter b {
+  width: 15px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  background: var(--k-black);
+  color: var(--k-led);
+  font: 700 13px/1 var(--k-mono);
+  border: 1px solid var(--k-led-bd);
+}
+
+/* ---------- 도망가는 버튼 ---------- */
+/* <div class="k-arena" data-arena>
+     <button class="k-yes" data-grow …>네!</button>
+     <button class="k-no" data-dodge="아니요|진짜요?">아니요</button>
+   </div> */
+.k-arena {
+  position: relative;
+  flex: none;
+  width: 248px;
+  height: 200px;
+  align-self: center;
+}
+.k-yes {
+  position: absolute;
+  left: 40px;
+  top: 66px;
+  z-index: 2;
+  font: 400 22px/1 var(--k-display);
+  background: var(--k-yellow);
+  color: var(--k-ink);
+  border: 3px solid var(--k-ink);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 4px 4px 0 var(--k-ink);
+  transform: scale(var(--k-grow, 1));
+  transition: transform 0.25s;
+  cursor: pointer;
+}
+.k-no {
+  position: absolute;
+  left: 156px;
+  top: 76px;
+  font: 700 14px/1 var(--k-body);
+  background: var(--k-white);
+  color: var(--k-ink);
+  border: 2px solid var(--k-ink);
+  border-radius: 10px;
+  padding: 10px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: none;
+  transition: left 0.18s, top 0.18s;
+}
+[data-dodge] {
+  touch-action: none;
+}
+
+/* ---------- 도장 ---------- */
+.k-stamp {
+  font: 400 40px/1 var(--k-display);
+  color: var(--k-seal);
+  border: 5px solid var(--k-seal);
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.65);
+  transform: rotate(-8deg);
+  animation: k-stamp 0.35s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes k-stamp {
+  from {
+    transform: rotate(-8deg) scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* 장면 위를 덮는 판 (도장 찍을 때 등): <div class="k-overlay" id="…" hidden> */
+.k-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+/* ---------- 꽃가루 ---------- */
+.k-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+}
+body > .k-confetti {
+  position: fixed;
+}
+.k-confetti i {
+  position: absolute;
+  top: -24px;
+  width: 7px;
+  height: 11px;
+  font-style: normal;
+  animation: k-fall linear forwards;
+}
+.k-confetti i.k-emoji {
+  width: auto;
+  height: auto;
+  font-size: 20px;
+  line-height: 1;
+}
+@keyframes k-fall {
+  to {
+    transform: translateY(1200px) rotate(540deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-marquee > div,
+  .k-sparkles i,
+  .k-stamp,
+  html.k-js [data-story] > .scene.is-on {
+    animation: none;
+  }
+  .k-yes,
+  .k-no {
+    transition: none;
+  }
+}

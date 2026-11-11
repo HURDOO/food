@@ -1,0 +1,182 @@
+/* 이 페이지만의 모양. 장면 설계 크기는 280×580이다. */
+
+/* 표지 */
+.cover {
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+.cover-name {
+  margin-top: 10px;
+  font-size: 52px;
+}
+.cover-foot {
+  margin-top: auto;
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+  font-size: 10.5px;
+}
+.cover-foot p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cover-small {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--k-lav);
+}
+
+/* 실시간 검색어 */
+.trend {
+  background: #f4f6f9;
+}
+.trend-head {
+  font: 700 15px/1.3 var(--k-body);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.trend-head span {
+  font-size: 10px;
+  color: #8a8f99;
+  font-weight: 400;
+}
+.trend-list {
+  list-style: none;
+  padding: 0;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e3e6eb;
+}
+.trend-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-top: 1px solid #eef0f3;
+}
+.trend-list li:first-child {
+  border-top: 0;
+}
+.trend-list b {
+  color: #2f6bff;
+  width: 14px;
+}
+.trend-list i {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 11px;
+  color: #ff3b30;
+}
+.polaroid {
+  margin: 6px auto 0;
+  background: #fff;
+  padding: 10px 10px 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  transform: rotate(2.5deg);
+  width: 200px;
+  text-align: center;
+}
+.polaroid span,
+.polaroid img {
+  display: grid;
+  place-items: center;
+  width: 180px;
+  height: 140px;
+  object-fit: cover;
+  background: #d8cfbd;
+  font-size: 64px;
+}
+.polaroid figcaption {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #5b524c;
+}
+
+/* 질문 */
+.ask {
+  background-color: var(--k-pink);
+  background-image: radial-gradient(circle, var(--k-yellow) 0 3px, transparent 3.5px);
+  background-size: 24px 24px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+.ask-emoji {
+  font-size: 52px;
+  line-height: 1;
+}
+.ask-text {
+  font: 400 30px/1.2 var(--k-display);
+  color: var(--k-white);
+  text-shadow: -2px -2px 0 var(--k-ink), 2px -2px 0 var(--k-ink), -2px 2px 0 var(--k-ink), 2px 2px 0 var(--k-ink), 4px 5px 0 var(--k-ink);
+}
+.ask-hint {
+  font: 700 11px/1.3 var(--k-body);
+  background: var(--k-yellow);
+  padding: 3px 8px;
+}
+.ask-agree {
+  background: rgba(255, 79, 160, 0.95);
+  font: 700 14px/1.6 var(--k-body);
+}
+.ask-retry {
+  font: 700 12px/1 var(--k-body);
+  background: transparent;
+  color: var(--k-ink);
+  border: 1.5px solid var(--k-ink);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+/* 마무리 */
+.end {
+  background: #fffbe6;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+}
+.end-title {
+  font: 400 34px/1.1 var(--k-display);
+}
+.end-rain {
+  font: 700 16px/1 var(--k-body);
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 3px solid var(--k-ink);
+  background: var(--k-yellow);
+  box-shadow: 3px 3px 0 var(--k-ink);
+  cursor: pointer;
+}
+.end-pick {
+  border: 2px dashed var(--k-ink);
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.end-pick legend {
+  font: 700 12px/1 var(--k-body);
+  padding: 0 6px;
+}
+.end-pick label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+.end-restart {
+  font: 700 12px/1 var(--k-body);
+  background: transparent;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}

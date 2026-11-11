@@ -9,6 +9,10 @@ export interface Config {
   assetsDir: string;
   adminPassword: string;
   secureCookies: boolean;
+  /** 개발 서버에서 /dev/<이름>/으로 바로 보여 줄 페이지 소스 폴더들. 운영에서는 항상 비어 있다. */
+  devPageDirs: string[];
+  /** 개발 미리보기가 쓰는 공용 도구(kit.js, kit.css) 위치 */
+  kitDir: string;
 }
 
 /**
@@ -30,6 +34,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const baseUrl = (env.APP_BASE_URL || `http://localhost:${port}`).replace(/\/+$/, '');
   new URL(baseUrl); // 잘못된 주소면 여기서 멈춘다
 
+  const devPageDirs = production || !env.DEV_PAGE_DIRS ? [] : env.DEV_PAGE_DIRS.split(',').filter(Boolean).map((d) => resolve(d));
+
   return {
     production,
     port,
@@ -39,5 +45,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     assetsDir: resolve(env.ASSETS_DIR || 'dist/public'),
     adminPassword,
     secureCookies: baseUrl.startsWith('https://'),
+    devPageDirs,
+    kitDir: resolve(env.KIT_DIR || 'dist/kit'),
   };
 }

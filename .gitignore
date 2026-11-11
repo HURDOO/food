@@ -1,6 +1,7 @@
 node_modules/
 dist/
 data/
+pages/
 .env*
 *.log
 .DS_Store

@@ -1,34 +1,47 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { Hono, type Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { isCouponOption, parseTributeInput, pickFood, toView, type FieldErrors, type Tribute } from '../shared/tribute.ts';
 import type { Assets } from './assets.ts';
 import { createLoginLimiter, SESSION_COOKIE, SESSION_DAYS, type Auth } from './auth.ts';
+import { checkBundle, contentType, FILE_NAME, fillPlaceholders, MAX_BUNDLE_BYTES, readTitle, type BundleFile } from './bundle.ts';
 import type { Config } from './config.ts';
-import { JpegError, stripJpegMetadata } from './jpeg.ts';
-import * as pages from './pages.ts';
-import type { FileStore, PhotoChange } from './store.ts';
+import { cleanMedia, MediaError } from './media.ts';
+import * as views from './pages.ts';
+import type { FileStore } from './store.ts';
 
-export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
-export const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
-
-// 링크 미리보기를 만드는 봇은 조회수에 넣지 않는다.
+// 링크 미리보기를 만드는 봇은 조회수와 반응에 넣지 않는다.
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|kakaotalk-scrap|preview|headless|curl|wget/i;
+const SLUG = /^[a-z0-9][a-z0-9-]{0,40}$/;
 
-function csp(scriptHash?: string): string {
-  return [
-    "default-src 'self'",
-    `script-src 'self'${scriptHash ? ` 'sha256-${scriptHash}'` : ''}`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    'font-src https://fonts.gstatic.com',
-    "img-src 'self' data: blob:",
-    "connect-src 'self'",
-    "base-uri 'none'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "object-src 'none'",
-  ].join('; ');
-}
+const ADMIN_CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  'font-src https://fonts.gstatic.com',
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+].join('; ');
+
+// 손으로 만든 페이지용. 스크립트는 같이 올린 파일만 돌고, 글꼴은 구글 폰트와 jsDelivr(눈누 글꼴)에서 받을 수 있다.
+const PAGE_CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+  "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net",
+  "img-src 'self' data: blob:",
+  "media-src 'self'",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+].join('; ');
 
 export interface AppDeps {
   config: Config;
@@ -41,21 +54,23 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
   const app = new Hono();
   const limiter = createLoginLimiter();
   const baseHost = new URL(config.baseUrl).host;
+  const css = () => assets.href('admin.css');
 
   const isAdmin = (c: Context) => auth.verify(getCookie(c, SESSION_COOKIE));
-  const photoUrl = (t: Tribute) => (t.photo ? `/p/${t.photo}` : null);
+  const isBot = (c: Context) => BOT_UA.test(c.req.header('user-agent') ?? '');
+  const pageUrl = (id: string) => `${config.baseUrl}/h/${id}/`;
 
   app.use('*', async (c, next) => {
     await next();
     c.header('X-Content-Type-Options', 'nosniff');
     c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
     c.header('X-Frame-Options', 'DENY');
-    if (!c.res.headers.has('Content-Security-Policy')) c.header('Content-Security-Policy', csp());
+    if (!c.res.headers.has('Content-Security-Policy')) c.header('Content-Security-Policy', ADMIN_CSP);
   });
 
-  // 다른 사이트에서 보낸 POST는 막는다 (관리자 쿠키는 SameSite=Lax라 이중 안전장치).
+  // 다른 사이트에서 보낸 쓰기 요청은 막는다 (관리자 쿠키는 SameSite=Lax라 이중 안전장치).
   app.use('*', async (c, next) => {
-    if (c.req.method === 'POST') {
+    if (c.req.method !== 'GET' && c.req.method !== 'HEAD') {
       const origin = c.req.header('origin');
       if (origin) {
         let host = '';
@@ -79,7 +94,7 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
     }
   });
 
-  app.get('/', (c) => c.html(pages.homePage(assets.href('admin.css'))));
+  app.get('/', (c) => c.html(views.homePage(css())));
 
   app.get('/assets/:file', (c) => {
     const file = assets.file(c.req.param('file'));
@@ -90,60 +105,179 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
     });
   });
 
-  app.get('/p/:file', (c) => {
-    const data = store.readPhoto(c.req.param('file'));
-    if (!data) return c.notFound();
-    return c.body(new Uint8Array(data), 200, {
-      'Content-Type': 'image/jpeg',
-      'Cache-Control': 'public, max-age=31536000, immutable',
-    });
-  });
+  // ---------- 페이지 (링크 받은 사람용) ----------
 
-  // ---------- 헌정관 (공개) ----------
-
-  app.get('/h/:id', (c) => {
-    const found = store.get(c.req.param('id'));
-    if (!found) return c.notFound();
-    const counted = !isAdmin(c) && !BOT_UA.test(c.req.header('user-agent') ?? '');
-    const t = (counted && store.recordView(found.id)) || found;
-    const view = toView(t, { photoUrl: photoUrl(t), views: t.stats.views, coupon: t.stats.coupon });
-    const script = assets.inlineTributeScript();
-    c.header('Content-Security-Policy', csp(script.hash));
+  const sendIndex = (c: Context, html: string, url: string, views: number) => {
+    c.header('Content-Security-Policy', PAGE_CSP);
     c.header('Cache-Control', 'no-store');
     c.header('X-Robots-Tag', 'noindex, nofollow');
-    return c.html(pages.tributePage({ tribute: t, view, baseUrl: config.baseUrl, cssHref: assets.href('tribute.css'), script: script.code }));
+    return c.html(fillPlaceholders(html, { pageUrl: url, views }));
+  };
+
+  const sendFile = (c: Context, name: string, data: Buffer, etag: string) => {
+    c.header('Content-Security-Policy', PAGE_CSP);
+    c.header('X-Robots-Tag', 'noindex, nofollow');
+    c.header('Cache-Control', 'no-cache');
+    c.header('ETag', etag);
+    if (c.req.header('if-none-match') === etag) return c.body(null, 304);
+    return c.body(new Uint8Array(data), 200, { 'Content-Type': contentType(name) });
+  };
+
+  app.get('/h/:id', (c) => {
+    const id = c.req.param('id');
+    return store.get(id) ? c.redirect(`/h/${id}/`, 308) : c.notFound();
   });
 
-  const smallBody = bodyLimit({ maxSize: 1024, onError: (c) => c.text('too large', 413) });
-
-  app.post('/h/:id/yes', smallBody, (c) => {
-    const t = store.recordYes(c.req.param('id'));
-    return t ? c.body(null, 204) : c.notFound();
+  app.get('/h/:id/', (c) => {
+    const id = c.req.param('id');
+    const found = store.readFile(id, 'index.html');
+    if (!found) return c.notFound();
+    const counted = !isAdmin(c) && !isBot(c);
+    const meta = (counted && store.recordView(id)) || found.meta;
+    return sendIndex(c, found.data.toString('utf8'), pageUrl(id), meta.views);
   });
 
-  app.post('/h/:id/coupon', smallBody, async (c) => {
-    let choice: unknown;
+  app.get('/h/:id/:file', (c) => {
+    const { id, file } = c.req.param();
+    if (file === 'index.html') return store.get(id) ? c.redirect(`/h/${id}/`, 308) : c.notFound();
+    const found = store.readFile(id, file);
+    if (!found) return c.notFound();
+    return sendFile(c, file, found.data, `"${found.meta.bundle}-${file}"`);
+  });
+
+  app.post('/h/:id/react', bodyLimit({ maxSize: 1024, onError: (c) => c.text('too large', 413) }), async (c) => {
+    const id = c.req.param('id');
+    if (!store.get(id)) return c.notFound();
+    let body: { key?: unknown; value?: unknown };
     try {
-      choice = ((await c.req.json()) as { choice?: unknown }).choice;
+      body = (await c.req.json()) as typeof body;
     } catch {
       return c.json({ error: 'bad_request' }, 400);
     }
-    if (!isCouponOption(choice)) return c.json({ error: 'bad_choice' }, 400);
-    const t = store.recordCoupon(c.req.param('id'), choice);
-    return t ? c.body(null, 204) : c.notFound();
+    const key = typeof body.key === 'string' ? body.key : '';
+    const value = typeof body.value === 'string' ? body.value : '';
+    if (!/^[a-z0-9_-]{1,24}$/.test(key)) return c.json({ error: 'bad_key' }, 400);
+    // 내가 열어 보거나 봇이 누른 건 남기지 않는다.
+    if (!isAdmin(c) && !isBot(c)) store.recordReaction(id, key, value);
+    return c.body(null, 204);
+  });
+
+  // ---------- 개발 미리보기 (pnpm dev에서만) ----------
+
+  if (config.devPageDirs.length) {
+    const findDevDir = (slug: string) => {
+      if (!SLUG.test(slug)) return null;
+      for (const dir of config.devPageDirs) {
+        try {
+          readFileSync(join(dir, slug, 'index.html'));
+          return join(dir, slug);
+        } catch {
+          // 다음 폴더에서 찾는다
+        }
+      }
+      return null;
+    };
+
+    app.get('/dev', (c) => c.redirect('/dev/', 303));
+    app.get('/dev/', (c) => {
+      const items: Array<{ slug: string; group: string }> = [];
+      for (const dir of config.devPageDirs) {
+        try {
+          for (const slug of readdirSync(dir).sort()) if (findDevDir(slug) === join(dir, slug)) items.push({ slug, group: basename(dir) });
+        } catch {
+          // 폴더가 아직 없으면 건너뛴다
+        }
+      }
+      c.header('Cache-Control', 'no-store');
+      return c.html(views.devIndexPage(css(), items));
+    });
+    app.get('/dev/:slug', (c) => c.redirect(`/dev/${c.req.param('slug')}/`, 303));
+    app.get('/dev/:slug/', (c) => {
+      const slug = c.req.param('slug');
+      const dir = findDevDir(slug);
+      if (!dir) return c.notFound();
+      return sendIndex(c, readFileSync(join(dir, 'index.html'), 'utf8'), `${config.baseUrl}/dev/${slug}/`, 0);
+    });
+    app.get('/dev/:slug/:file', (c) => {
+      const { slug, file } = c.req.param();
+      const dir = findDevDir(slug);
+      if (!dir || !FILE_NAME.test(file)) return c.notFound();
+      for (const base of [dir, ...(file === 'kit.js' || file === 'kit.css' ? [config.kitDir] : [])]) {
+        try {
+          const data = readFileSync(join(base, file));
+          c.header('Content-Security-Policy', PAGE_CSP);
+          c.header('Cache-Control', 'no-store');
+          return c.body(new Uint8Array(data), 200, { 'Content-Type': contentType(file) });
+        } catch {
+          // 페이지 폴더에 없으면 공용 도구 폴더를 본다
+        }
+      }
+      return c.notFound();
+    });
+  }
+
+  // ---------- 올리기 API (Mac의 올리기 스크립트용) ----------
+
+  const apiAuth = async (c: Context, next: () => Promise<void>) => {
+    if (limiter.blocked()) return c.json({ error: 'too_many_attempts' }, 429);
+    const m = /^Bearer (.+)$/.exec(c.req.header('authorization') ?? '');
+    if (!m || !auth.checkPassword(m[1] as string)) {
+      limiter.fail();
+      return c.json({ error: 'unauthorized' }, 401);
+    }
+    await next();
+  };
+
+  const uploadLimit = bodyLimit({ maxSize: MAX_BUNDLE_BYTES + 2 * 1024 * 1024, onError: (c) => c.json({ error: 'too_large', problems: ['전체 크기가 너무 커요'] }, 413) });
+
+  async function readBundle(c: Context): Promise<{ files: BundleFile[]; problems: string[] }> {
+    const body = await c.req.parseBody({ all: true });
+    const raw = body.files;
+    const list = (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw]).filter((f): f is File => f instanceof File);
+    const files: BundleFile[] = [];
+    const problems: string[] = [];
+    for (const f of list) {
+      try {
+        files.push({ name: f.name, data: cleanMedia(f.name, new Uint8Array(await f.arrayBuffer())) });
+      } catch (err) {
+        if (!(err instanceof MediaError)) throw err;
+        problems.push(`${f.name}: 사진을 읽지 못했어요`);
+      }
+    }
+    return { files, problems: [...problems, ...checkBundle(files)] };
+  }
+
+  const titleOf = (files: BundleFile[]) => readTitle(files.find((f) => f.name === 'index.html')?.data.toString('utf8') ?? '');
+
+  app.post('/api/pages', apiAuth, uploadLimit, async (c) => {
+    const { files, problems } = await readBundle(c);
+    if (problems.length) return c.json({ error: 'bad_bundle', problems }, 400);
+    const meta = store.create(titleOf(files), files);
+    return c.json({ id: meta.id, url: pageUrl(meta.id) }, 201);
+  });
+
+  app.put('/api/pages/:id', apiAuth, uploadLimit, async (c) => {
+    const id = c.req.param('id');
+    if (!store.get(id)) return c.json({ error: 'not_found' }, 404);
+    const { files, problems } = await readBundle(c);
+    if (problems.length) return c.json({ error: 'bad_bundle', problems }, 400);
+    const meta = store.replace(id, titleOf(files), files);
+    return meta ? c.json({ id: meta.id, url: pageUrl(meta.id) }) : c.json({ error: 'not_found' }, 404);
   });
 
   // ---------- 관리자 ----------
 
-  app.get('/admin/login', (c) => (isAdmin(c) ? c.redirect('/admin', 303) : c.html(pages.loginPage(assets.href('admin.css'), null))));
+  const smallBody = bodyLimit({ maxSize: 1024, onError: (c) => c.text('too large', 413) });
+
+  app.get('/admin/login', (c) => (isAdmin(c) ? c.redirect('/admin', 303) : c.html(views.loginPage(css(), null))));
 
   app.post('/admin/login', smallBody, async (c) => {
-    if (limiter.blocked()) return c.html(pages.loginPage(assets.href('admin.css'), '시도가 너무 많아요. 15분 뒤에 다시 해 주세요.'), 429);
+    if (limiter.blocked()) return c.html(views.loginPage(css(), '시도가 너무 많아요. 15분 뒤에 다시 해 주세요.'), 429);
     const body = await c.req.parseBody();
     const password = typeof body.password === 'string' ? body.password : '';
     if (!password || !auth.checkPassword(password)) {
       limiter.fail();
-      return c.html(pages.loginPage(assets.href('admin.css'), '비밀번호가 맞지 않아요.'), 401);
+      return c.html(views.loginPage(css(), '비밀번호가 맞지 않아요.'), 401);
     }
     setCookie(c, SESSION_COOKIE, auth.issue(), {
       httpOnly: true,
@@ -167,84 +301,18 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
   });
   app.use('/admin', async (c, next) => (isAdmin(c) ? next() : c.redirect('/admin/login', 303)));
 
-  const noStore = (c: Context) => c.header('Cache-Control', 'no-store');
-
   app.get('/admin', (c) => {
-    noStore(c);
-    const items = store.list().map((tribute) => ({ tribute, food: pickFood(tribute.menu) }));
-    return c.html(pages.adminListPage({ cssHref: assets.href('admin.css'), scriptHref: assets.href('admin.js'), baseUrl: config.baseUrl, items }));
+    c.header('Cache-Control', 'no-store');
+    return c.html(views.adminListPage({ cssHref: css(), scriptHref: assets.href('admin.js'), baseUrl: config.baseUrl, pages: store.list() }));
   });
 
-  app.get('/admin/new', (c) => {
-    noStore(c);
-    return c.html(pages.adminFormPage({ cssHrefs: [assets.href('tribute.css'), assets.href('admin.css')], scriptHref: assets.href('admin.js'), tribute: null }));
-  });
-
-  app.get('/admin/t/:id', (c) => {
-    const t = store.get(c.req.param('id'));
-    if (!t) return c.notFound();
-    noStore(c);
-    return c.html(
-      pages.adminSharePage({
-        cssHref: assets.href('admin.css'),
-        scriptHref: assets.href('admin.js'),
-        baseUrl: config.baseUrl,
-        tribute: t,
-        justCreated: c.req.query('new') === '1',
-      }),
-    );
-  });
-
-  app.get('/admin/t/:id/edit', (c) => {
-    const t = store.get(c.req.param('id'));
-    if (!t) return c.notFound();
-    noStore(c);
-    return c.html(pages.adminFormPage({ cssHrefs: [assets.href('tribute.css'), assets.href('admin.css')], scriptHref: assets.href('admin.js'), tribute: t }));
-  });
-
-  const uploadLimit = bodyLimit({ maxSize: MAX_UPLOAD_BYTES, onError: (c) => c.json({ errors: { photo: '사진이 너무 커요.' } }, 413) });
-
-  async function readForm(c: Context): Promise<{ errors: FieldErrors; input: ReturnType<typeof parseTributeInput>['value']; photo: Buffer | null; removePhoto: boolean }> {
-    const body = await c.req.parseBody();
-    const { value, errors } = parseTributeInput(body as Record<string, unknown>);
-    let photo: Buffer | null = null;
-    const file = body.photo;
-    if (file instanceof File && file.size > 0) {
-      if (file.size > MAX_PHOTO_BYTES) errors.photo = '사진이 너무 커요. 다른 사진을 골라 주세요.';
-      else {
-        try {
-          photo = stripJpegMetadata(new Uint8Array(await file.arrayBuffer()));
-        } catch (err) {
-          if (!(err instanceof JpegError)) throw err;
-          errors.photo = '사진을 읽지 못했어요. 다른 사진을 골라 주세요.';
-        }
-      }
-    }
-    return { errors, input: value, photo, removePhoto: body.removePhoto === '1' };
-  }
-
-  app.post('/admin/api/tributes', uploadLimit, async (c) => {
-    const { errors, input, photo } = await readForm(c);
-    if (Object.keys(errors).length) return c.json({ errors }, 400);
-    const t = store.create(input, photo);
-    return c.json({ id: t.id }, 201);
-  });
-
-  app.post('/admin/api/tributes/:id', uploadLimit, async (c) => {
-    const { errors, input, photo, removePhoto } = await readForm(c);
-    if (Object.keys(errors).length) return c.json({ errors }, 400);
-    const change: PhotoChange = photo ? { kind: 'replace', data: photo } : removePhoto ? { kind: 'remove' } : { kind: 'keep' };
-    const t = store.update(c.req.param('id'), input, change);
-    return t ? c.json({ id: t.id }) : c.json({ error: 'not_found' }, 404);
-  });
-
-  app.post('/admin/api/tributes/:id/delete', smallBody, (c) => {
+  app.post('/admin/api/pages/:id/delete', smallBody, (c) => {
     return store.delete(c.req.param('id')) ? c.json({ ok: true }) : c.json({ error: 'not_found' }, 404);
   });
 
   app.notFound((c) => {
-    if (c.req.path.startsWith('/admin/api/')) return c.json({ error: 'not_found' }, 404);
-    return c.html(pages.notFoundPage(assets.href('admin.css')), 404);
+    if (c.req.path.startsWith('/admin/api/') || c.req.path.startsWith('/api/')) return c.json({ error: 'not_found' }, 404);
+    return c.html(views.notFoundPage(css()), 404);
   });
 
   app.onError((err, c) => {

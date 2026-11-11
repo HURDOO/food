@@ -1,19 +1,21 @@
 // /data 아래 파일 저장소.
-//   tributes/<id>.json   헌정관 하나
-//   photos/<id>-<v>.jpg   사진 (바꿀 때마다 새 이름이라 캐시가 꼬이지 않는다)
-//   session.key           관리자 세션 서명용 무작위 키
+//   pages/<id>/meta.json     제목, 조회수, 반응
+//   pages/<id>/b-<v>/...     페이지 파일 묶음 (다시 올릴 때마다 새 폴더로 갈아 끼운다)
+//   session.key              관리자 세션 서명용 무작위 키
 // 쓰기는 동기 I/O + 임시 파일 rename이라 요청끼리 섞이지 않고, 중간에 꺼져도 반쯤 쓴 파일이 남지 않는다.
 
 import { randomBytes } from 'node:crypto';
 import { accessSync, constants, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isCouponOption, type CouponOption, type Tribute, type TributeInput } from '../shared/tribute.ts';
+import { FILE_NAME, type BundleFile } from './bundle.ts';
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
 export const ID_PATTERN = /^[A-Za-z0-9]{10}$/;
-export const PHOTO_PATTERN = /^[A-Za-z0-9]{10}-[A-Za-z0-9]{6}\.jpg$/;
+export const REACTION_KEY = /^[a-z0-9_-]{1,24}$/;
+export const MAX_REACTION_KEYS = 20;
+export const MAX_REACTION_VALUE = 80;
 
-function randomId(length: number): string {
+export function randomId(length: number): string {
   const bytes = randomBytes(length * 2);
   let out = '';
   for (let i = 0; i < bytes.length && out.length < length; i++) {
@@ -23,19 +25,31 @@ function randomId(length: number): string {
   return out.length === length ? out : randomId(length);
 }
 
-export type PhotoChange = { kind: 'keep' } | { kind: 'remove' } | { kind: 'replace'; data: Buffer };
+export interface Reaction {
+  value: string;
+  count: number;
+  firstAt: string;
+  lastAt: string;
+}
+
+export interface PageMeta {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  bundle: string;
+  views: number;
+  reactions: Record<string, Reaction>;
+}
 
 export class FileStore {
   readonly root: string;
-  private readonly tributesDir: string;
-  private readonly photosDir: string;
+  private readonly pagesDir: string;
 
   constructor(root: string) {
     this.root = root;
-    this.tributesDir = join(root, 'tributes');
-    this.photosDir = join(root, 'photos');
-    mkdirSync(this.tributesDir, { recursive: true });
-    mkdirSync(this.photosDir, { recursive: true });
+    this.pagesDir = join(root, 'pages');
+    mkdirSync(this.pagesDir, { recursive: true });
   }
 
   sessionKey(): Buffer {
@@ -51,111 +65,123 @@ export class FileStore {
 
   /** /data에 실제로 쓸 수 있는지 확인한다. 헬스 체크용. */
   assertWritable(): void {
-    accessSync(this.tributesDir, constants.W_OK);
-    accessSync(this.photosDir, constants.W_OK);
+    accessSync(this.pagesDir, constants.W_OK);
   }
 
-  list(): Tribute[] {
-    const items: Tribute[] = [];
-    for (const name of readdirSync(this.tributesDir)) {
-      if (!name.endsWith('.json')) continue;
-      const t = this.get(name.slice(0, -5));
-      if (t) items.push(t);
+  list(): PageMeta[] {
+    const items: PageMeta[] = [];
+    for (const name of readdirSync(this.pagesDir)) {
+      const meta = this.get(name);
+      if (meta) items.push(meta);
     }
-    return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return items.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
-  get(id: string): Tribute | null {
+  get(id: string): PageMeta | null {
     if (!ID_PATTERN.test(id)) return null;
     try {
-      return JSON.parse(readFileSync(this.tributePath(id), 'utf8')) as Tribute;
+      return JSON.parse(readFileSync(this.metaPath(id), 'utf8')) as PageMeta;
     } catch {
       return null;
     }
   }
 
-  create(input: TributeInput, photo: Buffer | null, now = new Date()): Tribute {
+  /** 새 페이지를 만든다. 파일 묶음은 checkBundle을 통과한 것이어야 한다. */
+  create(title: string, files: readonly BundleFile[], now = new Date()): PageMeta {
     let id = randomId(10);
-    while (existsSync(this.tributePath(id))) id = randomId(10);
+    while (existsSync(join(this.pagesDir, id))) id = randomId(10);
+    mkdirSync(join(this.pagesDir, id));
+    let bundle: string;
+    try {
+      bundle = this.writeBundle(id, files);
+    } catch (err) {
+      rmSync(join(this.pagesDir, id), { recursive: true, force: true });
+      throw err;
+    }
     const stamp = now.toISOString();
-    const tribute: Tribute = {
-      ...input,
-      id,
-      photo: photo ? this.writePhoto(id, photo) : null,
-      createdAt: stamp,
-      updatedAt: stamp,
-      stats: { views: 0, agreedAt: null, coupon: null, couponAt: null },
-    };
-    this.save(tribute);
-    return tribute;
+    const meta: PageMeta = { id, title, createdAt: stamp, updatedAt: stamp, bundle, views: 0, reactions: {} };
+    this.save(meta);
+    return meta;
   }
 
-  update(id: string, input: TributeInput, change: PhotoChange, now = new Date()): Tribute | null {
+  /** 같은 주소를 유지한 채 파일만 갈아 끼운다. 조회수와 반응은 그대로 둔다. */
+  replace(id: string, title: string, files: readonly BundleFile[], now = new Date()): PageMeta | null {
     const current = this.get(id);
     if (!current) return null;
-    let photo = current.photo;
-    if (change.kind === 'replace') photo = this.writePhoto(id, change.data);
-    if (change.kind === 'remove') photo = null;
-    const next: Tribute = { ...current, ...input, id, photo, updatedAt: now.toISOString() };
+    const next: PageMeta = { ...current, title, bundle: this.writeBundle(id, files), updatedAt: now.toISOString() };
     this.save(next);
-    if (current.photo && current.photo !== photo) this.removePhoto(current.photo);
+    this.removeBundle(id, current.bundle);
     return next;
   }
 
   delete(id: string): boolean {
-    const current = this.get(id);
-    if (!current) return false;
-    rmSync(this.tributePath(id), { force: true });
-    if (current.photo) this.removePhoto(current.photo);
+    if (!this.get(id)) return false;
+    rmSync(join(this.pagesDir, id), { recursive: true, force: true });
     return true;
   }
 
-  recordView(id: string): Tribute | null {
-    return this.mutateStats(id, (s) => ({ ...s, views: s.views + 1 }));
-  }
-
-  recordYes(id: string, now = new Date()): Tribute | null {
-    return this.mutateStats(id, (s) => (s.agreedAt ? s : { ...s, agreedAt: now.toISOString() }));
-  }
-
-  recordCoupon(id: string, choice: CouponOption, now = new Date()): Tribute | null {
-    if (!isCouponOption(choice)) return null;
-    return this.mutateStats(id, (s) => ({ ...s, coupon: choice, couponAt: now.toISOString() }));
-  }
-
-  readPhoto(file: string): Buffer | null {
-    if (!PHOTO_PATTERN.test(file)) return null;
+  readFile(id: string, name: string): { meta: PageMeta; data: Buffer } | null {
+    const meta = this.get(id);
+    if (!meta || !FILE_NAME.test(name)) return null;
     try {
-      return readFileSync(join(this.photosDir, file));
+      return { meta, data: readFileSync(join(this.pagesDir, id, meta.bundle, name)) };
     } catch {
       return null;
     }
   }
 
-  private mutateStats(id: string, fn: (s: Tribute['stats']) => Tribute['stats']): Tribute | null {
+  recordView(id: string): PageMeta | null {
+    return this.mutate(id, (m) => ({ ...m, views: m.views + 1 }));
+  }
+
+  /** 반응을 남긴다. 키마다 마지막 값과 횟수를 둔다. 키 개수는 정해진 만큼만 받는다. */
+  recordReaction(id: string, key: string, value: string, now = new Date()): PageMeta | null {
+    if (!REACTION_KEY.test(key)) return null;
+    const clean = value.replace(/\s+/g, ' ').trim().slice(0, MAX_REACTION_VALUE);
+    const stamp = now.toISOString();
+    return this.mutate(id, (m) => {
+      const prev = m.reactions[key];
+      if (!prev && Object.keys(m.reactions).length >= MAX_REACTION_KEYS) return m;
+      const reaction: Reaction = { value: clean, count: (prev?.count ?? 0) + 1, firstAt: prev?.firstAt ?? stamp, lastAt: stamp };
+      return { ...m, reactions: { ...m.reactions, [key]: reaction } };
+    });
+  }
+
+  private mutate(id: string, fn: (m: PageMeta) => PageMeta): PageMeta | null {
     const current = this.get(id);
     if (!current) return null;
-    const next = { ...current, stats: fn(current.stats) };
-    this.save(next);
+    const next = fn(current);
+    if (next !== current) this.save(next);
     return next;
   }
 
-  private writePhoto(id: string, data: Buffer): string {
-    const file = `${id}-${randomId(6)}.jpg`;
-    this.writeAtomic(join(this.photosDir, file), data);
-    return file;
+  private writeBundle(id: string, files: readonly BundleFile[]): string {
+    const bundle = `b-${randomId(8)}`;
+    const tmp = join(this.pagesDir, id, `.tmp-${randomId(8)}`);
+    mkdirSync(tmp);
+    try {
+      for (const f of files) {
+        if (!FILE_NAME.test(f.name)) throw new Error(`bad file name: ${f.name}`);
+        writeFileSync(join(tmp, f.name), f.data, { mode: 0o644 });
+      }
+      renameSync(tmp, join(this.pagesDir, id, bundle));
+    } catch (err) {
+      rmSync(tmp, { recursive: true, force: true });
+      throw err;
+    }
+    return bundle;
   }
 
-  private removePhoto(file: string): void {
-    if (PHOTO_PATTERN.test(file)) rmSync(join(this.photosDir, file), { force: true });
+  private removeBundle(id: string, bundle: string): void {
+    if (/^b-[A-Za-z0-9]{8}$/.test(bundle)) rmSync(join(this.pagesDir, id, bundle), { recursive: true, force: true });
   }
 
-  private save(t: Tribute): void {
-    this.writeAtomic(this.tributePath(t.id), `${JSON.stringify(t, null, 2)}\n`);
+  private save(meta: PageMeta): void {
+    this.writeAtomic(this.metaPath(meta.id), `${JSON.stringify(meta, null, 2)}\n`);
   }
 
-  private tributePath(id: string): string {
-    return join(this.tributesDir, `${id}.json`);
+  private metaPath(id: string): string {
+    return join(this.pagesDir, id, 'meta.json');
   }
 
   private writeAtomic(file: string, data: string | Buffer, mode = 0o644): void {
