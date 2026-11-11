@@ -1,0 +1,850 @@
+<title>밤티 레시피</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 읽기 폭 단일 칼럼 리포트. 사례·아이디어만 2열 그리드로 펼치고, 손글씨 메모는 핵심 세 곳에만 */
+:root{
+  --paper:#F2F5F1;
+  --card:#FFFFFF;
+  --ink:#18201C;
+  --muted:#58635D;
+  --line:#D3DBD5;
+  --accent:#176A4B;
+  --accent-soft:#E1EFE8;
+  --marker:#FFE45C;
+  --marker-ink:#18201C;
+  --halo:#D99A00;
+  --warn:#B4362E;
+  --f-display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-hand:"Gaegu","Nanum Pen Script","Apple SD Gothic Neo",cursive;
+  --s-1:.8125rem; --s0:1rem; --s1:1.125rem; --s2:1.375rem; --s3:1.75rem; --s4:2.75rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111613; --card:#181F1B; --ink:#E5EBE7; --muted:#9BA7A0; --line:#2B3530;
+    --accent:#5CC59A; --accent-soft:#1C3329; --marker:#6E5C10; --marker-ink:#FFF5C4;
+    --halo:#FFCF4A; --warn:#F07A70; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111613; --card:#181F1B; --ink:#E5EBE7; --muted:#9BA7A0; --line:#2B3530;
+  --accent:#5CC59A; --accent-soft:#1C3329; --marker:#6E5C10; --marker-ink:#FFF5C4;
+  --halo:#FFCF4A; --warn:#F07A70; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:var(--s0); line-height:1.7;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0;
+  -webkit-text-size-adjust:100%;
+  word-break:keep-all; overflow-wrap:break-word;
+}
+.wrap{max-width:780px; margin:0 auto; padding-block:40px 64px; display:flex; flex-direction:column; gap:56px}
+a{color:var(--accent); text-underline-offset:3px}
+a:focus-visible, button:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:4px}
+h1,h2,h3{text-wrap:balance; margin:0}
+h1{font-family:var(--f-display); font-weight:400; font-size:clamp(2.5rem, 9vw, 4.25rem); line-height:1.05; letter-spacing:-.01em}
+h2{font-family:var(--f-display); font-weight:400; font-size:var(--s3); line-height:1.25}
+h3{font-size:var(--s1); font-weight:700; line-height:1.4}
+p{margin:0}
+.eyebrow{font-size:var(--s-1); font-weight:600; letter-spacing:.06em; color:var(--muted)}
+.lede{font-size:var(--s1); max-width:62ch}
+.muted{color:var(--muted)}
+.small{font-size:var(--s-1)}
+.hl{background:linear-gradient(transparent 58%, var(--marker) 58%); color:inherit; padding:0 .1em}
+:root[data-theme="dark"] .hl{color:var(--marker-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hl{color:var(--marker-ink)}}
+.hand{font-family:var(--f-hand); font-weight:700; color:var(--accent); font-size:1.35rem; line-height:1.2}
+section{display:flex; flex-direction:column; gap:20px}
+.sec-head{display:flex; flex-direction:column; gap:6px}
+.stack{display:flex; flex-direction:column; gap:12px}
+ul.plain{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:6px}
+
+/* header */
+header{display:flex; flex-direction:column; gap:16px}
+.meta-row{display:flex; flex-wrap:wrap; gap:8px 16px; font-size:var(--s-1); color:var(--muted)}
+.title-row{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap}
+.title-row .hand{transform:rotate(-4deg); margin-bottom:10px}
+
+/* tl;dr */
+.tldr{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px 22px 24px; display:flex; flex-direction:column; gap:14px}
+.tldr ol{margin:0; padding-left:1.3em; display:flex; flex-direction:column; gap:10px}
+.tldr li::marker{font-weight:700; color:var(--accent)}
+
+/* axis */
+.axis{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:14px}
+.axis-bar{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px}
+.axis-end{font-family:var(--f-display); font-size:var(--s2); line-height:1}
+.axis-line{height:6px; border-radius:3px; background:linear-gradient(90deg, var(--line), var(--accent))}
+.axis-chips{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.chip-col{display:flex; flex-direction:column; gap:8px; min-width:0}
+.chip-col.right{align-items:flex-end; text-align:right}
+.chip{display:inline-block; border:1.5px dashed var(--muted); border-radius:999px; padding:3px 12px; font-size:var(--s-1); font-weight:600}
+.chip.good{border-style:solid; border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
+.quote{border-left:3px solid var(--accent); padding:2px 0 2px 14px; color:var(--ink)}
+.quote cite{display:block; font-style:normal; font-size:var(--s-1); color:var(--muted); margin-top:4px}
+
+/* grid cards */
+.grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+@media (max-width:640px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:8px; min-width:0}
+.card .src{font-size:var(--s-1); color:var(--muted)}
+.apply{font-size:.9375rem; border-top:1px dashed var(--line); padding-top:8px; margin-top:auto}
+.apply b{color:var(--accent)}
+
+/* tables */
+.tbl{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--card)}
+table{border-collapse:collapse; width:100%; min-width:620px; font-size:.9375rem}
+th,td{text-align:left; vertical-align:top; padding:12px 14px; border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-size:var(--s-1); letter-spacing:.04em; color:var(--muted); font-weight:600; background:var(--paper)}
+td .when{display:block; font-size:var(--s-1); color:var(--muted); font-variant-numeric:tabular-nums}
+td b{font-weight:700}
+
+/* case rows */
+.cases{display:flex; flex-direction:column; border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden}
+.case{display:grid; grid-template-columns:minmax(0,11rem) minmax(0,1fr); gap:6px 18px; padding:14px 18px; border-bottom:1px solid var(--line)}
+.case:last-child{border-bottom:0}
+.case-name{font-weight:700}
+.case-name .when{display:block; font-weight:400; font-size:var(--s-1); color:var(--muted); font-variant-numeric:tabular-nums}
+.case-body{display:flex; flex-direction:column; gap:4px; min-width:0}
+.case-body .take{font-size:.9375rem; color:var(--accent); font-weight:600}
+@media (max-width:560px){.case{grid-template-columns:minmax(0,1fr)}}
+.group-label{font-size:var(--s-1); font-weight:700; letter-spacing:.06em; color:var(--muted); padding:10px 18px; background:var(--paper); border-bottom:1px solid var(--line)}
+
+/* rules */
+.rules{counter-reset:r; display:grid; grid-template-columns:repeat(auto-fit, minmax(13rem,1fr)); gap:12px}
+.rule{background:var(--accent-soft); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:4px}
+.rule b{color:var(--accent)}
+.note-wrap{position:relative}
+.side-note{transform:rotate(-2deg); align-self:flex-start}
+
+/* ideas */
+.ideas{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px}
+@media (max-width:640px){.ideas{grid-template-columns:minmax(0,1fr)}}
+.idea{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:10px; min-width:0}
+.idea.pick{border:2px solid var(--accent)}
+.idea-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.badge{flex:none; font-size:.75rem; font-weight:700; background:var(--accent); color:var(--card); border-radius:999px; padding:2px 10px; white-space:nowrap}
+.tags{display:flex; flex-wrap:wrap; gap:6px}
+.tag{font-size:.75rem; font-weight:600; border:1px solid var(--line); border-radius:6px; padding:1px 8px; color:var(--muted); white-space:nowrap}
+.tag.lv-low{color:var(--accent); border-color:var(--accent)}
+.tag.lv-high{color:var(--warn); border-color:var(--warn)}
+dl.kv{margin:0; display:grid; grid-template-columns:auto minmax(0,1fr); gap:4px 10px; font-size:.9375rem}
+dl.kv dt{color:var(--muted); font-weight:600; white-space:nowrap}
+dl.kv dd{margin:0; min-width:0}
+
+/* demo */
+.demo{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:12px}
+.demo-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap}
+#halo{width:100%; max-width:100%; aspect-ratio:4/3; max-height:360px; border-radius:10px; background:var(--paper); touch-action:none; cursor:crosshair; display:block}
+.demo-out{min-height:3.4em; font-size:var(--s1); font-weight:600}
+.demo-out .big{font-family:var(--f-display); font-weight:400; font-size:var(--s3); color:var(--halo)}
+.btns{display:flex; gap:8px; flex-wrap:wrap}
+button{font:inherit; font-size:.9375rem; font-weight:600; border-radius:10px; padding:10px 16px; min-height:44px; cursor:pointer; border:1.5px solid var(--accent); background:transparent; color:var(--accent)}
+button.primary{background:var(--accent); color:var(--card)}
+
+/* warn list */
+.warn-list{display:flex; flex-direction:column; gap:10px; margin:0; padding:0; list-style:none}
+.warn-list li{border-left:3px solid var(--warn); padding:4px 0 4px 14px}
+
+/* sources */
+.sources{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px 24px; font-size:var(--s-1)}
+@media (max-width:640px){.sources{grid-template-columns:minmax(0,1fr)}}
+.sources h3{font-size:var(--s-1); letter-spacing:.06em; color:var(--muted); margin-bottom:6px}
+.sources ul{margin:0; padding-left:1.1em; display:flex; flex-direction:column; gap:4px}
+.sources li{overflow-wrap:anywhere}
+footer{font-size:var(--s-1); color:var(--muted); border-top:1px solid var(--line); padding-top:16px}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.85em; background:var(--accent-soft); border-radius:4px; padding:1px 5px; overflow-wrap:anywhere}
+@media (prefers-reduced-motion: reduce){*{transition:none!important; animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="meta-row">
+    <span>은혜 갚는 호랑이 · 추가 조사</span>
+    <span>2026.11.10</span>
+    <a href="https://claude.ai/artifact/WjDkdRWc8RydtregNnA8d7">기존 기획안·시안 보기</a>
+  </div>
+  <div class="title-row">
+    <h1>밤티 레시피</h1>
+    <span class="hand">허접하게, 근데 정성껏</span>
+  </div>
+  <p class="lede">기존 시안(6장면을 탭으로 넘기는 선배 헌정관)을 바탕으로, 사람들이 좋아하는 병맛·밤티 감성이 어떻게 만들어지는지 더 찾아봤습니다. 특히 요즘 바이브코딩으로 쉽게 만드는 3D와 직접 조작하는 게임 쪽을 중심으로 봤어요.</p>
+</header>
+
+<section class="tldr" aria-labelledby="tldr-h">
+  <h2 id="tldr-h">결론 먼저</h2>
+  <ol>
+    <li><b>밤티는 원래 '못생기고 촌스럽다'는 놀림말입니다.</b> 반대말은 2026년 9월부터 '장원영'이에요. 그래서 <span class="hl">밤티는 사이트 디자인과 나(후배)가 맡고, 선배님은 언제나 장원영 쪽</span>에 둡니다. 선배 외모를 밤티로 만드는 순간 그냥 놀림이 됩니다.</li>
+    <li><b>사랑받는 B급은 '잘 만든 의외성'입니다.</b> 촌스러움은 서체·장식·손그림에만 쓰고, 메뉴·날짜·사진·버튼 반응은 정확해야 일부러 그런 걸로 읽혀요.</li>
+    <li><b>정성은 보여야 효과가 납니다.</b> 오래 걸렸다는 걸 알면 같은 결과물도 더 높이 평가한다는 연구가 있어요. 엔딩 크레딧처럼 제작 기간과 도구를 대놓고 보여 주세요.</li>
+    <li><b>조작형은 '3초 안에 시작, 조작 하나, 30초 안에 끝, 결과는 캡처 한 장'입니다.</b> 퍼진 웹 장난감과 물리 코미디 게임에서 공통으로 보이는 문법이에요. 그리고 결말은 뭘 해도 선배가 이기게 짭니다.</li>
+    <li><b>3D는 '한 장면, 한 조작'까지만 하세요.</b> 인스타 인앱 브라우저에서는 기울이기·마이크 같은 기기 기능이 불안정해서, 탭·드래그로만 끝까지 갈 수 있어야 합니다.</li>
+  </ol>
+</section>
+
+<section aria-labelledby="bamti-h">
+  <div class="sec-head">
+    <span class="eyebrow">단어부터</span>
+    <h2 id="bamti-h">'밤티'는 무슨 뜻이고, 어디에 써야 하나</h2>
+  </div>
+  <p>경기일보(2026.5.2)는 밤티를 "못생겼거나 별로라는 뜻으로 외모·스타일이 촌스럽거나 어색할 때 놀리는 맥락에서" 쓰는 말이라고 설명합니다. 아바타 게임 '라인플레이'에서 닉네임이 밤티인 사용자의 아바타가 외모 지적을 받은 장면이 캡처돼 퍼지면서 밈이 됐어요.</p>
+  <p>2026년 9월에는 반대말로 '장원영'이 붙었습니다. 너무 좋은 것에 '장원영 신발', '장원영 당면'처럼 이름을 붙이는 식이에요. 장원영 본인도 팬 플랫폼에서 이렇게 반응했습니다.</p>
+  <p class="quote">"다들 밤티 같은 밥 먹지 말고 장원영 밥 먹고, 밤티 같은 하루 대신 장원영 하루 보내"<cite>엘르 코리아, 2026.9.11</cite></p>
+  <div class="axis" role="img" aria-label="밤티에서 장원영까지의 축. 헌정관 디자인과 나는 밤티 쪽, 선배님은 장원영 쪽">
+    <div class="axis-bar">
+      <span class="axis-end">밤티</span>
+      <span class="axis-line"></span>
+      <span class="axis-end" style="color:var(--accent)">장원영</span>
+    </div>
+    <div class="axis-chips">
+      <div class="chip-col">
+        <span class="chip">헌정관 디자인 (워드아트, 반짝이)</span>
+        <span class="chip">나 (하찮은 손그림 후배)</span>
+        <span class="chip">내 그림 실력, 내 사진</span>
+      </div>
+      <div class="chip-col right">
+        <span class="chip good">선배님</span>
+        <span class="chip good">오늘 먹은 밥</span>
+        <span class="chip good">선배님의 메뉴 선택권 하사</span>
+      </div>
+    </div>
+  </div>
+  <p><b>바로 쓸 수 있는 문장:</b> "본 사이트는 밤티이나 선배님은 장원영임" (입장 경고문), "밤티 같던 제 3월에 장원영 밥약을 사주신 선배님" (속보 헤드라인).</p>
+</section>
+
+<section aria-labelledby="why-h">
+  <div class="sec-head">
+    <span class="eyebrow">원리</span>
+    <h2 id="why-h">허접한데 정성스러운 게 왜 좋을까</h2>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <h3>잘 만든 의외성</h3>
+      <p>"B급은 저예산이 아니라 잘 만든 의외성"이고, 의도가 안 보이는 연출은 성의 없어 보인다는 분석입니다. 배민의 고구려 수렵도 패러디, 충주시 유튜브처럼 정색한 형식에 하찮은 내용을 담는 게 공통점이에요. 충주시 김선태 주무관은 "'우리 이렇게 밖에 못해'… 거기에 한 스푼의 센스"라고 했습니다.</p>
+      <p class="src">마케팅인사이드 2026.10.22 · 비즈워치 2026.5 · KOCCA 2019.10</p>
+      <p class="apply"><b>적용</b> 신문·영수증·상장 서식은 진짜처럼 정확하게, 내용만 하찮게.</p>
+    </article>
+    <article class="card">
+      <h3>실수 효과</h3>
+      <p>유능한 사람의 작은 실수는 호감을 높이지만, 평범한 사람의 같은 실수는 호감을 낮춥니다(Aronson 외, 1966). 바탕이 잘 만들어져 있어야 허점이 매력으로 보인다는 뜻이에요.</p>
+      <p class="src">Pratfall effect</p>
+      <p class="apply"><b>적용</b> 탭 반응, 글자 크기, 로딩 속도는 제대로. 허접함은 겉에만.</p>
+    </article>
+    <article class="card">
+      <h3>잘못됐는데 괜찮을 때 웃긴다</h3>
+      <p>양성 위반 이론(McGraw &amp; Warren, 2010)입니다. 후속 연구에서는 사소한 위반일수록 가까운 사이에서 더 웃기다고 나왔어요.</p>
+      <p class="src">McGraw &amp; Warren 2010, 2012</p>
+      <p class="apply"><b>적용</b> 기존 시안의 '주접 레벨 3단계'를 선배와의 거리에 맞추는 설계가 이 이론과 맞습니다.</p>
+    </article>
+    <article class="card">
+      <h3>정성은 보여야 한다</h3>
+      <p>같은 그림도 오래 걸렸다고 들으면 더 높이 평가합니다(노력 휴리스틱, 2004). 손으로 만든 선물은 '사랑이 담긴' 것으로 느껴지고, 가까운 사람에게 줄 때 효과가 가장 커요(Fuchs 외, 2015).</p>
+      <p class="src">Kruger 외 2004 · Journal of Marketing 2015</p>
+      <p class="apply"><b>적용</b> 마지막에 엔딩 크레딧. "제작 기간 3일 · 사용 도구: 그림판 · 제작비 0원".</p>
+    </article>
+    <article class="card">
+      <h3>하찮음은 무해하다</h3>
+      <p>망그러진 곰, 가나디, 롯데리아 떼리앙은 삐뚤빼뚤한 선이 무기입니다. 2026년 5월에는 한국 사용자가 스레드에 올린 '세상에서 제일 하찮은 그림' 프롬프트가 퍼져 ChatGPT의 '낙서' 템플릿이 됐어요. 너무 완벽한 AI 이미지에 대한 피로가 계기였습니다.</p>
+      <p class="src">캐릿 · 한국경제 2025.5 · 월간 디자인 2025.5 · 디지털 인사이트 2026.5.22</p>
+      <p class="apply"><b>적용</b> 손그림은 한두 개만. 음식 사진을 그 프롬프트로 '하찮은 그림판 버전'으로 바꿔 나란히 두기.</p>
+    </article>
+    <article class="card">
+      <h3>놀림엔 장난 신호와 출구</h3>
+      <p>놀림은 과장된 말투 같은 '장난 신호'가 분명하면 관계를 가깝게 하고, 흐리면 적대감으로 읽힌다는 연구입니다(Keltner 외, 2001).</p>
+      <p class="src">Keltner 외 2001</p>
+      <p class="apply"><b>적용</b> 도망가는 '아니요' 버튼은 몇 번 뒤에 "알겠습니다…(삐짐)"으로 항복하게.</p>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="meme-h">
+  <div class="sec-head">
+    <span class="eyebrow">요즘 문장 틀</span>
+    <h2 id="meme-h">2026년 8~10월 밈을 주접 문장으로</h2>
+    <p class="muted">고구마팜 월간 밈 모음과 트렌드 뉴스레터에서 칭찬·감사로 바꿀 수 있는 것만 골랐습니다. 밈은 수명이 짧으니 장면마다 하나씩만 쓰세요.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th style="width:26%">밈</th><th style="width:32%">원래 쓰임</th><th>헌정관에서</th></tr></thead>
+      <tbody>
+        <tr><td><b>밤티 반대말 장원영</b><span class="when">2026.9</span></td><td>너무 좋은 것에 '장원영 ○○'</td><td>"오늘 먹은 건 밥이 아니라 장원영 마라탕이었습니다"</td></tr>
+        <tr><td><b>부라는 게 숨긴다고 숨겨지는 것도 아니고</b><span class="when">2026.9~10</span></td><td>자랑 사진에 붙이고, 남들은 "분명 불법적인 일을 하고 있을 것"으로 받음</td><td>속보 헤드라인: "은혜라는 게 숨긴다고 숨겨지는 것도 아니고"</td></tr>
+        <tr><td><b>OO 정보</b><span class="when">2026.9</span></td><td>부러운 대상에 "엄마 정보", "아빠 정보" 댓글</td><td>스토리 본 친구들이 보낼 "선배 정보"를 미리 받아치기: "선배 정보 문의는 정중히 사절합니다"</td></tr>
+        <tr><td><b>나 왜 ~이 영원할 거 같지?</b><span class="when">2026.10</span></td><td>드라마 대사. "영원할 건가 보다"로 받음</td><td>"나 왜 이 은혜가 영원할 거 같지? … 영원할 건가 보다"</td></tr>
+        <tr><td><b>체포하겠어</b><span class="when">2026.10</span></td><td>아일릿 신곡. "[목표] 하겠어"를 줄줄이</td><td>보은권 장면: "보은하겠어 / 커피 사겠어 / 좋은 후배 되겠어"</td></tr>
+        <tr><td><b>일하기 전 제 모습이고요</b><span class="when">2026.8</span></td><td>전후가 대비되는 릴스</td><td>"밥약 전 제 모습이고요"(흑백, 시든 사진) → "밥약 후"(반짝이 풀세트)</td></tr>
+        <tr><td><b>~를 무례하지 않게 말해 주세요</b><span class="when">2026.8</span></td><td>"까맣다" → "여름이 널 아주 사랑했나 보다"</td><td>"'배불러서 졸리다'를 무례하지 않게 → '선배님의 은혜가 위장까지 가득 찼습니다'"</td></tr>
+        <tr><td><b>이것은 내가 최고의 히어로가 되기까지의 이야기다</b><span class="when">2026.9</span></td><td>한 문장으로 전개를 미리 알려 주는 제목</td><td>입장 화면: "이것은 새내기가 은혜 갚는 호랑이가 되기까지의 이야기다"</td></tr>
+        <tr><td><b>○○삐</b><span class="when">2026.8</span></td><td>삐에로 밈에서 나온 호칭. 선배삐, 개대박삐</td><td>주접 레벨 3(광기)에서만 쓰는 호칭 "선배삐"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="play-h">
+  <div class="sec-head">
+    <span class="eyebrow">3D · 직접 조작</span>
+    <h2 id="play-h">직접 만지는 병맛은 어떻게 퍼졌나</h2>
+    <p class="muted">기존 조사에서 다룬 도망가는 버튼, 포춘쿠키, 로또 사이트는 뺐습니다.</p>
+  </div>
+  <div class="cases">
+    <div class="group-label">바이브코딩으로 만든 브라우저 3D 게임</div>
+    <div class="case">
+      <div class="case-name">fly.pieter.com<span class="when">2025.2</span></div>
+      <div class="case-body">
+        <p>Pieter Levels가 AI로 만든 비행 게임입니다. 링크를 열면 설치나 설명 없이 바로 비행기를 몰아요. 첫 게시물 조회수가 158만 회였고, 제작 과정을 X에 실시간으로 올렸습니다. "17일 만에 연 매출 100만 달러"는 본인 주장이에요.</p>
+        <p class="take">→ 첫 화면에서 바로 조작이 시작돼야 한다</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">Vibe Jam 2025 · 2026<span class="when">2025.4 · 2026.6</span></div>
+      <div class="case-body">
+        <p>AI로 만드는 웹 게임 대회입니다. 2025년엔 1,000개 넘게 출품됐고, 2026년 1위는 카피바라가 배달앱 주문을 받아 음식을 배달하는 게임이었어요. 특별상 이름이 '가장 웃긴', '가장 저주받은', '가장 엉뚱한', '분노의 종료상'입니다. 병맛이 아예 시상 부문이에요.</p>
+        <p class="take">→ 메카닉은 하나만. 귀여운 존재가 일상 노동을 하는 설정이 먹힌다</p>
+      </div>
+    </div>
+    <div class="group-label">허접한 물리·조작이 웃음 포인트인 게임</div>
+    <div class="case">
+      <div class="case-name">QWOP<span class="when">2008</span></div>
+      <div class="case-body">
+        <p>키 4개로 허벅지와 종아리를 따로 움직여 달리다 넘어지는 게임입니다. 만든 사람은 진지한 달리기 게임보다 "슬랩스틱을 따라가는 게 나았다"고 했고, 넘어지면 "Everyone is a winner"가 떠요.</p>
+        <p class="take">→ 실패해도 위로 문구. 다시 하기는 0초</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">Goat Simulator · Human Fall Flat<span class="when">2014 · 2016</span></div>
+      <div class="case-body">
+        <p>Goat Simulator 개발자는 "웃긴 버그는 안 고친다, 크래시만 고친다"고 했습니다. Human Fall Flat 개발자는 물리가 계획대로 안 돼도 결과가 "믿을 만하면" 웃기다고 했어요.</p>
+        <p class="take">→ 흐느적거림은 남기되, 화면이 멈추거나 깨지는 건 고친다</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">Untitled Goose Game · PEAK<span class="when">2019 · 2025.6</span></div>
+      <div class="case-body">
+        <p>거위의 장난은 보기만 해도 이해되고 아무도 다치지 않습니다. PEAK는 물리 기반 협동 등반 게임으로, 게임잼 작품에서 출발해 약 한 달 만에 500만 장이 팔렸어요.</p>
+        <p class="take">→ 캡처 한 장만 봐도 상황이 읽히고, 아무도 다치지 않는다</p>
+      </div>
+    </div>
+    <div class="group-label">짧은 웹 장난감 (neal.fun)</div>
+    <div class="case">
+      <div class="case-name">I'm Not a Robot<span class="when">2025.9</span></div>
+      <div class="case-body">
+        <p>캡차를 패러디한 48단계 게임입니다. 단계가 갈수록 황당해지고, 만든 사람은 완주한 비율이 1%도 안 될 거라고 했어요. 같은 사이트의 Stimulation Clicker(2025.1)는 누를수록 화면이 난장판이 되고, Draw a Perfect Circle은 원을 그리면 정확도 %가 나와 그 점수를 캡처해 공유합니다.</p>
+        <p class="take">→ 다들 아는 인터넷 클리셰를 비틀고, 결과를 숫자로 보여 준다</p>
+      </div>
+    </div>
+    <div class="group-label">선물로 만든 인터랙티브</div>
+    <div class="case">
+      <div class="case-name">DigiBouquet<span class="when">2026.2 보도</span></div>
+      <div class="case-body">
+        <p>꽃을 골라 꽃다발을 만들고 카드를 써서 링크로 보내는 사이트입니다. 꽃마다 '우아함', '순수' 같은 덕목이 붙어 있어요.</p>
+        <p class="take">→ 꽃 대신 선배의 덕목으로 엮는 '은혜 꽃다발'</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">친구 얼굴 게임 · 과몰입 선물<span class="when">2024.12 · 2025</span></div>
+      <div class="case-body">
+        <p>시크릿산타 선물로 친구 아바타를 넣은 3D 플래피버드(Flappy Vuky), 여자친구 생일에 회로기판까지 만든 커스텀 게임기(Kiki's Farm) 같은 개인작이 있습니다. 크게 바이럴 된 '선물 게임'은 드물었어요. 받는 한 사람이 웃는 게 목적이고, 과몰입 자체가 감동 포인트입니다.</p>
+        <p class="take">→ 조회수 말고 '이걸 나 때문에 만들었다고?'가 목표</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">한국 바이브코딩 사례<span class="when">2026.5 캐릿</span></div>
+      <div class="case-body">
+        <p>ATM처럼 생긴 사이트에 비밀번호를 누르면 용돈이 나오는 릴스, 카메라 앞 손동작으로 소리를 내는 Soundgo(관련 영상 100만~200만 회) 등이 소개됐어요.</p>
+        <p class="take">→ 익숙한 기계(ATM, 키오스크) 화면을 흉내 내면 설명이 필요 없다</p>
+      </div>
+    </div>
+    <div class="group-label">AI 이미지·3D</div>
+    <div class="case">
+      <div class="case-name">나노바나나 피규어<span class="when">2025.8~9</span></div>
+      <div class="case-body">
+        <p>사진 한 장으로 '책상 위 피규어와 상자, 모델링 화면' 이미지를 만드는 유행이었어요. 사진을 3D 모델 파일로 바꿔 주는 도구(Tripo, Meshy 등)도 브라우저에서 쓸 수 있을 만큼 쉬워졌습니다.</p>
+        <p class="take">→ 사람 얼굴보다 '먹은 메뉴'를 피규어나 황금 동상으로 만드는 게 안전하고 웃기다</p>
+      </div>
+    </div>
+    <div class="case">
+      <div class="case-name">이탈리안 브레인롯<span class="when">2025.1~</span></div>
+      <div class="case-body">
+        <p>AI로 만든 기괴한 3D 캐릭터에 가짜 이탈리아어 이름을 붙인 밈입니다. 한국에서도 캐릭터 합성, 이상형 월드컵 같은 2차 창작이 이어졌어요. 서울예대 김광집 교수는 "가짜 이미지 특유의 어색함과 기괴함을 그 자체로 즐기는" 현상으로 봤습니다.</p>
+        <p class="take">→ 오늘 메뉴로 가짜 이탈리아어 이름 짓기: '마라탕티노 사주시니'</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h3>1분짜리 폰 웹으로 줄이면 남는 것</h3>
+    <div class="rules">
+      <div class="rule"><b>3초 안에 시작</b><span>설명 화면 없이 첫 탭부터 조작</span></div>
+      <div class="rule"><b>입력은 하나</b><span>탭이나 드래그 하나. 결과는 흐느적거려도 됨</span></div>
+      <div class="rule"><b>실패해도 위로</b><span>다시 하기는 0초. "Everyone is a winner"</span></div>
+      <div class="rule"><b>결과는 캡처 한 장</b><span>숫자나 등급이 찍힌 9:16 결과 화면</span></div>
+      <div class="rule"><b>결말은 선배 승리</b><span>뭘 해도 SSR, 뭘 해도 100%</span></div>
+    </div>
+    <span class="hand side-note">↑ 이 다섯 개만 지키면 됨</span>
+  </div>
+</section>
+
+<section aria-labelledby="ideas-h">
+  <div class="sec-head">
+    <span class="eyebrow">헌정관에 넣을 것</span>
+    <h2 id="ideas-h">미니게임 후보 9개</h2>
+    <p class="muted">모두 30초 안에 끝나고, 결말은 선배를 치켜세우는 쪽입니다. 테두리가 진한 세 개를 먼저 만들기를 권해요. 만들기 쉽고, 인앱 브라우저에서 막힐 기능이 없습니다.</p>
+  </div>
+
+  <div class="demo" aria-labelledby="demo-h">
+    <div class="demo-head">
+      <h3 id="demo-h">맛보기: 선배 후광 그리기</h3>
+      <span class="small muted">손가락이나 마우스로 머리 위에 원을 그려 보세요</span>
+    </div>
+    <canvas id="halo" aria-label="원을 그리는 캔버스. 하찮게 그린 선배 얼굴 위에 후광을 그린다"></canvas>
+    <p class="demo-out" id="halo-out" aria-live="polite">원을 다 그리고 손을 떼면 정확도가 나옵니다.</p>
+    <div class="btns">
+      <button type="button" id="halo-auto" class="primary">대신 그려 주기</button>
+      <button type="button" id="halo-reset">지우기</button>
+    </div>
+    <p class="small muted">neal.fun의 Draw a Perfect Circle 패러디입니다. 실력이 몇 %든 나머지는 '선배 보정'으로 채워 100%가 됩니다. 실제 헌정관에선 상장 장면의 도장으로 쓰면 좋아요.</p>
+  </div>
+
+  <div class="ideas">
+    <article class="idea pick">
+      <div class="idea-top"><h3>은혜 인증 캡차</h3><span class="badge">먼저</span></div>
+      <div class="tags"><span class="tag">탭</span><span class="tag">15초</span><span class="tag lv-low">난이도 하</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>"선배님이 사주신 음식을 모두 고르세요" 9칸에 그날 찍은 음식 사진을 섞어 둡니다. 마지막 문제는 "선배님보다 멋진 사람을 고르세요"인데 고를 수 있는 건 '해당 없음'뿐.</dd>
+        <dt>결과</dt><dd>"인증 완료: 은혜를 아는 사람 ✓"</dd>
+        <dt>붙일 곳</dt><dd>입장 장면 바로 뒤. 사진을 넣기로 한 결정과 잘 맞아요.</dd>
+        <dt>출처</dt><dd>neal.fun I'm Not a Robot</dd>
+      </dl>
+    </article>
+    <article class="idea pick">
+      <div class="idea-top"><h3>선배 후광 그리기</h3><span class="badge">먼저</span></div>
+      <div class="tags"><span class="tag">드래그</span><span class="tag">10초</span><span class="tag lv-low">난이도 하</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>하찮게 그린 선배 머리 위에 손가락으로 원을 그립니다.</dd>
+        <dt>결과</dt><dd>"실력 63% + 선배 보정 37% = 100%"</dd>
+        <dt>붙일 곳</dt><dd>상장 장면. 그린 원이 그대로 도장이 됩니다.</dd>
+        <dt>출처</dt><dd>Draw a Perfect Circle</dd>
+      </dl>
+    </article>
+    <article class="idea pick">
+      <div class="idea-top"><h3>밥약 가챠 10연차</h3><span class="badge">먼저</span></div>
+      <div class="tags"><span class="tag">탭 1번</span><span class="tag">10초</span><span class="tag lv-low">난이도 하</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>'10연차' 버튼을 누르면 카드가 한 장씩 뒤집힙니다.</dd>
+        <dt>결과</dt><dd>10장 전부 금테 SSR. "메뉴 선택권 하사", "계산 속도 S급", "편하게 먹어 한마디". 확률 표기는 "SSR 100% (선배 한정)".</dd>
+        <dt>붙일 곳</dt><dd>영수증 장면 대신, 또는 보은권 바로 앞.</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>황금 메뉴 동상 제막식</h3></div>
+      <div class="tags"><span class="tag">탭 + 드래그</span><span class="tag">20초</span><span class="tag">난이도 중</span><span class="tag">3D</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>탭하면 천이 벗겨지고 오늘 먹은 메뉴의 황금 동상이 나옵니다. 드래그로 돌려 봐요. 받침대엔 '밥약 공덕비'와 날짜.</dd>
+        <dt>결과</dt><dd>동상 앞 기념사진 프레임</dd>
+        <dt>메모</dt><dd>선배 얼굴 대신 메뉴를 동상으로 만들면 외모·초상 걱정이 없습니다. 저폴리로 만들면 밤티 감성과 폰 성능이 둘 다 해결돼요.</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>밥상 수박게임</h3></div>
+      <div class="tags"><span class="tag">탭</span><span class="tag">30초</span><span class="tag">난이도 중</span><span class="tag">2D 물리</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>반찬을 떨어뜨려 합칩니다. 김치 → 계란말이 → 오늘 메뉴 → '선배님 은혜'로 진화.</dd>
+        <dt>결과</dt><dd>"최종 진화: 은혜로운 선배님"</dd>
+        <dt>메모</dt><dd>확률을 보정해서 30초 안에 무조건 끝까지 가게 합니다.</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>선배 인형뽑기</h3></div>
+      <div class="tags"><span class="tag">드래그 + 탭</span><span class="tag">20초</span><span class="tag">난이도 중</span><span class="tag">2D 물리</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>집게는 일부러 허술하게 미끄러지다가 세 번째엔 무조건 성공.</dd>
+        <dt>결과</dt><dd>"SSR 선배 인형 획득" (피규어 상자 이미지)</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>칭찬 클리커</h3></div>
+      <div class="tags"><span class="tag">탭 연타</span><span class="tag">20초</span><span class="tag lv-low">난이도 하</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>누를 때마다 칭찬 도장, 반짝이, 박수 부대가 쌓여 화면이 난장판이 됩니다.</dd>
+        <dt>결과</dt><dd>"칭찬 게이지 측정 불가"</dd>
+        <dt>출처</dt><dd>Stimulation Clicker</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>은혜 쟁반 나르기</h3></div>
+      <div class="tags"><span class="tag">기울이기 → 드래그</span><span class="tag">20초</span><span class="tag">난이도 중</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>흐느적거리는 쟁반에 음식 사진을 올려 선배 앞까지 옮깁니다. 다 쏟아도 "선배님이 다 받아 주심".</dd>
+        <dt>메모</dt><dd>기울이기는 인앱 브라우저에서 막힐 수 있어서 드래그를 기본 조작으로 둡니다.</dd>
+      </dl>
+    </article>
+    <article class="idea">
+      <div class="idea-top"><h3>90도 인사 QWOP</h3></div>
+      <div class="tags"><span class="tag">버튼 2개</span><span class="tag">30초</span><span class="tag lv-high">난이도 상</span></div>
+      <dl class="kv">
+        <dt>하는 것</dt><dd>왼쪽·오른쪽 버튼으로 흐느적거리는 후배가 인사를 시도합니다. 넘어지면 선배가 일으켜 줘요.</dd>
+        <dt>결과</dt><dd>"예의 점수 103%"</dd>
+        <dt>메모</dt><dd>재밌지만 물리 튜닝에 시간이 많이 듭니다. 2단계로.</dd>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="tech-h">
+  <div class="sec-head">
+    <span class="eyebrow">기술 현실</span>
+    <h2 id="tech-h">인스타·카톡 인앱 브라우저에서 되는 것</h2>
+    <p class="muted">선배는 거의 무조건 인스타 스토리 링크로 엽니다. 그래서 일반 사파리·크롬이 아니라 인앱 브라우저 기준으로 봤어요. '기기 확인'은 자료로 확정하지 못해서 실제 폰으로 열어 봐야 하는 항목입니다.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th style="width:18%">기능</th><th style="width:38%">인앱에서</th><th>이렇게 쓰기</th></tr></thead>
+      <tbody>
+        <tr><td><b>탭 · 드래그</b></td><td>됩니다.</td><td>기본 조작으로. 게임 영역엔 <code>touch-action:none</code>, <code>overscroll-behavior:none</code>을 주고, 인앱의 뒤로가기 제스처와 부딪히지 않는지 기기 확인.</td></tr>
+        <tr><td><b>3D (WebGL)</b></td><td>됩니다. 다만 아이폰은 메모리 한도를 넘으면 경고 없이 페이지가 새로고침된다는 보고가 2026년 3월에도 미해결입니다.</td><td>3D 장면은 한 번에 하나, 텍스처 1024px 이하, 그림자 끄기, 화면 배율 1.5 이하, 장면을 나갈 때 리소스 정리.</td></tr>
+        <tr><td><b>기울이기 · 흔들기</b></td><td>조건부. 아이폰은 탭 안에서 권한을 요청하면 팝업이 뜨는 게 기본이지만 앱이 막을 수 있어요. 안드로이드는 기기 확인.</td><td>"시작" 버튼에서 권한 요청. 거부되거나 안 되면 드래그로 자동 전환.</td></tr>
+        <tr><td><b>마이크 (불기)</b></td><td>가장 불안정. 안드로이드 카톡 인앱에서 허용해도 에러가 난다는 2026년 8월 보고가 있습니다.</td><td>보너스로만. 기본 조작은 '꾹 누르기'.</td></tr>
+        <tr><td><b>진동</b></td><td>아이폰은 전 버전 미지원.</td><td>화면 흔들림과 효과음으로 대신.</td></tr>
+        <tr><td><b>소리</b></td><td>첫 탭 이후에만 납니다. 아이폰 무음 스위치가 켜져 있으면 안 날 수 있어요.</td><td>소리 없이도 웃기게 만들고, 소리는 덤.</td></tr>
+        <tr><td><b>결과 이미지 저장</b></td><td>화면에서 만든 이미지를 바로 다운로드시키는 방식은 인스타·카톡 모두 거의 실패합니다. 카카오 공식 답변으로는 둘 다 되는 건 서버 응답 헤더 방식뿐.</td><td>서버가 PNG를 만들어 다운로드 헤더로 내려주기, 또는 이미지를 띄우고 "꾹 눌러 저장" 안내.</td></tr>
+        <tr><td><b>스토리로 바로 공유</b></td><td>웹에서는 불가. Meta의 공식 방식은 앱 전용입니다.</td><td>"캡처해서 올려 주세요"가 제일 확실해요. 그래서 결과 화면을 캡처 한 장에 맞추는 게 저장 기능보다 중요합니다.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="stack">
+    <h3>도구 고르기</h3>
+    <p>다른 세션은 지금 Hono 서버, esbuild, TypeScript로 화면을 서버에서 그리는 구조로 만들고 있어요(React 없음). 이 구조에 맞춰 골랐습니다. 크기는 압축(gzip) 기준입니다.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th style="width:22%">도구</th><th style="width:16%">크기</th><th>언제</th></tr></thead>
+      <tbody>
+        <tr><td><b>CSS 3D transform</b></td><td>0KB</td><td>가챠 카드 뒤집기, 상장 회전, 동상 흉내. 라이브러리 없이 되고 바이브코딩도 제일 쉬워요. <span class="hl">3D 느낌의 80%는 이걸로 충분합니다.</span></td></tr>
+        <tr><td><b>three.js</b></td><td>약 186KB</td><td>진짜 3D 한 장면(동상 제막식). esbuild의 동적 import로 그 장면에서만 받고, 바로 앞 장면에서 미리 받아 둡니다.</td></tr>
+        <tr><td><b>model-viewer</b></td><td>three 포함 약 260KB</td><td>GLB 모델 하나 돌려 보기. 웹 컴포넌트라 React 없이 태그 하나로 됩니다. 인스타 인앱에서 AR 기능은 안 됨.</td></tr>
+        <tr><td><b>matter.js</b></td><td>약 26KB</td><td>2D 물리. 수박게임, 인형뽑기, 쟁반 나르기.</td></tr>
+        <tr><td><b>cannon-es</b></td><td>약 34KB</td><td>3D 물리가 꼭 필요할 때만.</td></tr>
+        <tr><td><b>피할 것</b></td><td></td><td>Babylon.js(약 500KB), Rapier(1.65MB), Spline 임베드, React Three Fiber(React가 없는 지금 구조엔 안 맞음).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid">
+    <article class="card">
+      <h3>밤티 3D는 성능에도 유리</h3>
+      <p>PS1 시절처럼 렌더 해상도를 0.3~0.5배로 낮추고 캔버스를 픽셀이 보이게 늘리면(<code>image-rendering:pixelated</code>) 그릴 픽셀이 1/4~1/10로 줄어요. 텍스처는 뭉개지지 않게 최근접 필터로, 저폴리 모델이면 메모리로 죽을 위험도 줄어듭니다.</p>
+      <p class="apply"><b>적용</b> 황금 메뉴 동상은 일부러 각진 저폴리 + 저해상도로.</p>
+    </article>
+    <article class="card">
+      <h3>AI로 3D 모델 만들 때</h3>
+      <p>Meshy 무료는 월 100크레딧이고 무료 결과물은 출처 표기(CC BY)가 필요해요. Rodin의 저폴리 변환은 유료입니다. <b>Hunyuan3D 오픈소스 라이선스는 한국을 적용 지역에서 뺐으니 쓰지 마세요.</b> AI 원본은 수백만 면이 나올 수 있어서 gltf-transform으로 줄여야 합니다(목표: 모델당 2만 삼각형, 1MB 이하).</p>
+      <p class="apply"><b>더 쉬운 길</b> 3D 파일 대신 나노바나나식 '피규어 상자' 이미지 한 장.</p>
+    </article>
+  </div>
+
+  <div class="stack">
+    <h3>성능 예산</h3>
+    <ul class="plain">
+      <li>첫 화면은 3D 없이 2초 안에 뜨게 (구글 기준 2.5초 이하가 '좋음').</li>
+      <li>첫 로딩 JS는 150KB 이하. 3D 묶음은 300KB 이하로 따로 떼서 필요한 장면에서만.</li>
+      <li>음식 사진까지 합쳐 전체 3MB 이하. 사진은 서버에서 줄이고 WebP로.</li>
+      <li>화면 높이는 <code>100vh</code> 대신 <code>100dvh</code>. 인앱 툴바 때문에 어긋나요.</li>
+    </ul>
+    <p class="small muted">참고로 Alex Russell의 2026년 분석은 중급 안드로이드 폰에서 3초 안에 열리려면 전체 2MiB, JS 0.3MiB가 한도라고 봅니다.</p>
+  </div>
+
+  <div class="stack">
+    <h3>실제 폰으로 확인할 것</h3>
+    <p class="muted small">아이폰·안드로이드 × 인스타·카톡 네 조합에서, 가능하면 오래된 아이폰 한 대 포함.</p>
+    <ul class="plain">
+      <li>3D 장면을 다섯 번 들어갔다 나와도 페이지가 새로고침되지 않는지</li>
+      <li>저전력 모드에서도 버벅이지 않는지 (아이폰 저전력 모드는 30fps 제한 보고)</li>
+      <li>기울이기 권한 팝업이 뜨는지, 거부하면 드래그로 넘어가는지</li>
+      <li>무음 스위치를 켠 상태에서 효과음</li>
+      <li>"꾹 눌러 저장"과 다운로드 버튼으로 사진 앱에 실제로 저장되는지</li>
+      <li>드래그할 때 인앱 브라우저의 닫기·뒤로가기 제스처와 부딪히지 않는지</li>
+      <li>인앱 툴바 때문에 화면 아래가 잘리지 않는지</li>
+    </ul>
+    <p class="small muted">테스트할 땐 인앱 브라우저 기능을 한 번에 점검해 주는 <a href="https://github.com/shalanah/inapp-debugger">inapp-debugger</a>를 같이 열어 보면 편해요.</p>
+  </div>
+</section>
+
+<section aria-labelledby="map-h">
+  <div class="sec-head">
+    <span class="eyebrow">시안에 바로 반영</span>
+    <h2 id="map-h">기존 6장면에 붙일 것</h2>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th style="width:18%">장면</th><th style="width:30%">지금 시안</th><th>추가 제안</th></tr></thead>
+      <tbody>
+        <tr><td><b>1 입장</b></td><td>반짝이 워드아트, 방문자 카운터</td><td>"이것은 새내기가 은혜 갚는 호랑이가 되기까지의 이야기다" + 경고문 "본 사이트는 밤티이나 선배님은 장원영임". 바로 뒤에 <b>은혜 인증 캡차</b>.</td></tr>
+        <tr><td><b>2 속보</b></td><td>밥약일보 1면</td><td>헤드라인을 "은혜라는 게 숨긴다고 숨겨지는 것도 아니고"로. 기사 문법(호외, 단독, 기자명)은 정색하고 정확하게.</td></tr>
+        <tr><td><b>3 영수증</b></td><td>은혜 영수증</td><td>"밥약 전 제 모습이고요 / 밥약 후" 비포·애프터 한 줄, 또는 <b>가챠 10연차</b>로 교체.</td></tr>
+        <tr><td><b>4 상장</b></td><td>밥약계의 빛과 소금상</td><td>궁서체에 금테. <b>후광 그리기</b>로 그린 원이 도장이 됨.</td></tr>
+        <tr><td><b>5 또 사주실 거죠?</b></td><td>'아니요'가 도망가고 '네'가 커짐</td><td>질문을 <b>"제가 보은해도 될까요?"</b>로 뒤집기를 권합니다. 선배 지갑 대신 내 지갑을 거는 쪽이 압박이 없어요. 아니요는 3번쯤 도망간 뒤 "알겠습니다…(삐짐)"으로 항복.</td></tr>
+        <tr><td><b>6 보은권</b></td><td>선배가 커피 메뉴 고르기</td><td>"보은하겠어 / 커피 사겠어" 다짐 + 엔딩 크레딧(제작 기간·도구·제작비) + "선배 정보 문의는 정중히 사절합니다".</td></tr>
+        <tr><td><b>보너스</b></td><td>없음</td><td>2단계에서 <b>황금 메뉴 동상 제막식</b>(3D)을 숨은 장면으로.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="line-h">
+  <div class="sec-head">
+    <span class="eyebrow">기존 '선 넘지 않기'에 더할 것</span>
+    <h2 id="line-h">조심할 것</h2>
+  </div>
+  <ul class="warn-list">
+    <li><b>밤티는 외모 놀림말입니다.</b> 선배 얼굴이나 옷차림에 밤티 연출을 쓰지 않습니다. 하찮은 손그림 선배를 넣는다면 외모 특징은 과장하지 말고 졸라맨 수준으로.</li>
+    <li><b>"또 사주세요"는 압박으로 읽힐 수 있어요.</b> 선배 81.9%가 밥약을 후회한 적이 있다는 설문이 있습니다(기존 조사). 주접의 방향은 '더 사 주세요'가 아니라 '갚겠습니다'.</li>
+    <li><b>유행 밈에 올라탄 콘텐츠가 비하·외모 묘사로 역풍을 맞은 사례가 계속 나옵니다.</b> 피식대학 영양군 편(2024.5, 지역 비하 논란 후 구독자 약 30만 명 감소), 제주청년센터 홍보 영상(2026.3, 외모 묘사로 삭제·사과), 경남교육청 골반춤 밈 영상(2025.10, 삭제·사과).</li>
+    <li><b>AI로 선배 얼굴을 피규어·3D로 만드는 건 본인 허락이 있을 때만.</b> 허락이 없으면 메뉴나 호랑이를 주인공으로 둡니다.</li>
+    <li><b>밈 문장은 장면당 하나.</b> 몇 달 지나면 낡아 보이니 바꾸기 쉬운 곳(문구 데이터)에 둡니다.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="src-h">
+  <div class="sec-head">
+    <span class="eyebrow">출처</span>
+    <h2 id="src-h">참고한 자료</h2>
+    <p class="muted small">수치는 원문에서 확인한 것만 넣었고, 만든 사람 본인의 주장은 본문에 그렇게 표시했습니다.</p>
+  </div>
+  <div class="sources">
+    <div>
+      <h3>밤티와 요즘 밈</h3>
+      <ul>
+        <li><a href="https://v.daum.net/v/20260502160116660">경기일보, 신조어 기사 (2026.5.2)</a></li>
+        <li><a href="https://www.elle.co.kr/article/1909447">엘르 코리아, 장원영과 밤티 (2026.9.11)</a></li>
+        <li><a href="https://gogumafarm.kr/%eb%8c%80%eb%b0%95%ec%82%90-%ec%82%90%eb%b0%94%ec%82%90-%eb%b0%88%ec%9e%98%ec%95%8c%ec%82%90-%eb%a7%8c%eb%93%a4%ec%96%b4-%ec%a3%bc%eb%8a%94-2026%eb%85%84-8%ec%9b%94-%ec%b5%9c%ec%8b%a0-%eb%b0%88/">고구마팜, 2026년 8월 최신 밈</a></li>
+        <li><a href="https://gogumafarm.kr/%eb%82%b4%ea%b0%80-%ea%b3%a0%ea%b5%ac%eb%a7%88%ed%8c%9c%ec%9d%b4%ec%97%88%ec%9c%bc%eb%a9%b4-%ec%9d%b4-%eb%b0%88%ec%9d%80-%ea%bc%ad-%ec%86%8c%ea%b0%9c%ed%95%98%ea%b3%a0-%ec%8b%b6%ec%9d%8c-2026/">고구마팜, 2026년 9월 최신 밈</a></li>
+        <li><a href="https://gogumafarm.kr/%eb%82%98-%ec%99%9c-%ec%9c%a0%ed%96%89-%eb%b0%88-%ec%86%8c%ea%b0%9c%ea%b0%80-%ec%98%81%ec%9b%90%ed%95%a0-%ea%b1%b0-%ea%b0%99%ec%a7%80-2026%eb%85%84-10%ec%9b%94-%ec%b5%9c%ec%8b%a0-%eb%b0%88-%eb%aa%a8/">고구마팜, 2026년 10월 최신 밈</a></li>
+        <li><a href="https://maily.so/trendaword/posts/g1o405qwzve">트렌드어워드 #632, 부라는 게 숨긴다고 (2026.10)</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>B급 감성과 하찮음</h3>
+      <ul>
+        <li><a href="https://inside.ampm.co.kr/insight/61336">마케팅인사이드, B급 감성 마케팅 S급이 말아주면 (2026.10.22)</a></li>
+        <li><a href="https://news.bizwatch.co.kr/article/consumer/2026/04/29/0042">비즈워치, 배달의민족 광고 (2026.5)</a></li>
+        <li><a href="https://www.kocca.kr/trend/vol20/sub/s43.html">KOCCA, 충주시 유튜브 인터뷰 (2019.10)</a></li>
+        <li><a href="https://www.careet.net/934">캐릿, 망그러진 곰 (2022.11)</a></li>
+        <li><a href="https://v.daum.net/v/20250520192701584">한국경제, 가나디 팝업 (2025.5.20)</a></li>
+        <li><a href="https://design.co.kr/article/122420/">월간 디자인, 롯데리아 떼리앙 (2025.5.28)</a></li>
+        <li><a href="https://ditoday.com/%EC%99%84%EB%B2%BD%ED%95%98%EA%B8%B0%EB%A7%8C-%ED%95%B4%EC%84%A0-%EC%99%B8%EB%A9%B4%EB%B0%9B%EB%8A%94%EB%8B%A4-%ED%95%98%EC%B0%AE%EC%9D%80-ai-%EA%B7%B8%EB%A6%BC%EC%9D%B4-%EB%9C%A8%EB%8A%94/">디지털 인사이트, 하찮은 AI 그림 (2026.5.22)</a></li>
+        <li><a href="https://www.kocca.kr/n_content/kocca_vol35/02.html">KOCCA, 이탈리안 브레인롯 분석 (2025.5.30)</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>심리 연구</h3>
+      <ul>
+        <li><a href="https://en.wikipedia.org/wiki/Pratfall_effect">Pratfall effect (Aronson 외, 1966)</a></li>
+        <li><a href="https://leeds-faculty.colorado.edu/mcgrawp/pdf/mcgraw.warren.2010.pdf">McGraw &amp; Warren, Benign Violations (2010)</a></li>
+        <li><a href="https://leeds-faculty.colorado.edu/mcgrawp/pdf/mcgraw.warren.williams.leonard.2012.pdf">McGraw 외, Too Close for Comfort (2012)</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/Effort_heuristic">Effort heuristic (Kruger 외, 2004)</a></li>
+        <li><a href="https://sciencedaily.com/releases/2015/03/150324111544.htm">Fuchs 외, 수제 효과 (2015)</a></li>
+        <li><a href="https://www.chicagobooth.edu/review/2013/august/2012-12-10-gift">Zhang &amp; Epley, 선물과 정성 (2012)</a></li>
+        <li><a href="https://esilab.berkeley.edu/wp-content/uploads/2017/12/Teasing-Review.pdf">Keltner 외, Teasing (2001)</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>게임과 웹 장난감</h3>
+      <ul>
+        <li><a href="https://levels.io/full-multiplayer-python-websockets-game-ai">levels.io, fly.pieter.com 제작기</a></li>
+        <li><a href="https://404media.co/this-game-created-by-ai-vibe-coding-makes-50-000-a-month-yours-probably-wont">404 Media, fly.pieter.com 수익</a></li>
+        <li><a href="http://vibejam.com/2025/">Vibe Jam 2025</a> · <a href="https://levels.io/vibe-jam-2026-winners-quality">Vibe Jam 2026 수상작 (2026.6.17)</a></li>
+        <li><a href="https://www.avclub.com/qwop-turned-failure-into-comedy-and-found-viral-immorta-1826394272">AV Club, QWOP</a></li>
+        <li><a href="https://cliqist.com/?p=3180">Cliqist, Goat Simulator 인터뷰 (2014)</a></li>
+        <li><a href="https://www.fanatical.com/en/blog/human-fall-flat-stumbling-upon-a-physics-based-gem">Fanatical, Human Fall Flat</a></li>
+        <li><a href="https://vicscreen.vic.gov.au/news/developing-a-horrible-goose-and-a-huge-following">VicScreen, Untitled Goose Game</a></li>
+        <li><a href="https://fullcleared.com/news/co-op-climbing-game-peak-has-sold-5m-copies/">PEAK 500만 장</a></li>
+        <li><a href="https://www.fastcompany.com/91417204/im-not-a-robot">Fast Company, I'm Not a Robot (2025)</a></li>
+        <li><a href="https://www.engadget.com/gaming/stimulation-clicker-is-a-nightmarish-free-browser-game-powered-by-internet-brainrot-134537169.html">Engadget, Stimulation Clicker</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>선물형 사례와 AI 3D</h3>
+      <ul>
+        <li><a href="https://www.artribune.com/editoria/grafica-illustrazione/2026/02/fiori-digitali-illustrati-digibouquet/">Artribune, DigiBouquet (2026.2)</a></li>
+        <li><a href="https://lazarcvetkovic.itch.io/flappy-vuky">Flappy Vuky (itch.io)</a></li>
+        <li><a href="https://github.com/Sebkabob/KikisFarm">Kiki's Farm (GitHub)</a></li>
+        <li><a href="https://dev.to/hoatepdev/celebrate-birthdays-virtually-with-an-interactive-cake-blowing-32kl">촛불 불기 케이크 (dev.to)</a></li>
+        <li><a href="https://www.careet.net/1909">캐릿, 바이브코딩 사례 (2026.5)</a></li>
+        <li><a href="https://magazine.hankyung.com/business/article/202508198276b">한경비즈니스, 나노바나나 피규어 (2025.8)</a></li>
+        <li><a href="https://www.3dprintingjournal.com/p/i-tested-printu-from-bambu-lab-an">3D Printing Journal, 사진→피규어 PrintU</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>인앱 브라우저와 3D 기술</h3>
+      <ul>
+        <li><a href="https://bugs.webkit.org/show_bug.cgi?id=300782">WebKit 버그 300782, 메모리 초과 시 새로고침</a></li>
+        <li><a href="https://developer.apple.com/documentation/webkit/wkuidelegate">Apple, WKUIDelegate 권한 기본값</a></li>
+        <li><a href="https://caniuse.com/mdn-api_deviceorientationevent_requestpermission_static">caniuse, 기울기 권한 요청</a></li>
+        <li><a href="https://developer.android.com/reference/android/webkit/WebChromeClient">Android, WebChromeClient 권한 처리</a></li>
+        <li><a href="https://devtalk.kakao.com/t/150964">카카오 데브톡, 안드로이드 인앱 마이크 오류 (2026.8)</a></li>
+        <li><a href="https://devtalk.kakao.com/t/146168">카카오 데브톡, 인앱 다운로드 방식 (2025.9)</a></li>
+        <li><a href="https://caniuse.com/vibration">caniuse, 진동</a></li>
+        <li><a href="https://github.com/shalanah/inapp-debugger">inapp-debugger (GitHub)</a></li>
+        <li><a href="https://developers.facebook.com/documentation/instagram-platform/sharing-to-stories">Meta, 스토리 공유 문서</a></li>
+        <li><a href="https://github.com/google/model-viewer/discussions/1915">model-viewer, 인스타 인앱 AR 논의</a></li>
+        <li><a href="https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1/blob/main/LICENSE">Hunyuan3D 2.1 라이선스</a></li>
+        <li><a href="https://infrequently.org/2025/11/performance-inequality-gap-2026/">Alex Russell, Performance Inequality Gap 2026</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>역풍 사례</h3>
+      <ul>
+        <li><a href="https://www.ajunews.com/view/20240519104214757">아주경제, 피식대학 영양군 편 (2024.5)</a></li>
+        <li><a href="https://www.mt.co.kr/entertainment/2024/08/30/2024083014037292653">머니투데이, 피식대학 구독자 감소 (2024.8)</a></li>
+        <li><a href="https://m.seoul.co.kr/news/2026/03/24/20260324500118">서울신문, 제주청년센터 영상 (2026.3)</a></li>
+        <li><a href="https://m.seoul.co.kr/news/2025/10/28/20251028500003">서울신문, 경남교육청 영상 (2025.10)</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>조사일 2026.11.10. 기존 기획안의 조사(고대 밥약 문화, 주접 문법, 도망가는 버튼 등)는 반복하지 않았습니다. 예시 문구 속 인물과 메뉴는 가상입니다.</footer>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('halo');
+  if (!cv || !cv.getContext) return;
+  const ctx = cv.getContext('2d');
+  const out = document.getElementById('halo-out');
+  let pts = [], drawing = false, done = false, W = 0, H = 0;
+  const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  function size() {
+    const r = cv.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function seeded(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+  function head() { const r = Math.min(W, H) * 0.19; return { cx: W / 2, cy: H * 0.64, r }; }
+
+  function face() {
+    const { cx, cy, r } = head();
+    const rnd = seeded(11);
+    ctx.strokeStyle = tok('--ink'); ctx.fillStyle = tok('--ink');
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let i = 0; i <= 36; i++) {
+      const a = i / 36 * Math.PI * 2;
+      const rr = r * (1 + (rnd() - .5) * .13);
+      const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * .93;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+    [[-.36, -.12], [.3, -.17]].forEach(([dx, dy]) => { ctx.beginPath(); ctx.arc(cx + dx * r, cy + dy * r, 2.8, 0, Math.PI * 2); ctx.fill(); });
+    ctx.beginPath(); ctx.moveTo(cx - r * .32, cy + r * .28); ctx.quadraticCurveTo(cx - r * .02, cy + r * .55, cx + r * .36, cy + r * .2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - r * .8, cy + r * 1.35); ctx.quadraticCurveTo(cx, cy + r * .85, cx + r * .85, cy + r * 1.4); ctx.stroke();
+    ctx.font = `700 ${Math.max(15, r * .36)}px ${tok('--f-hand')}`;
+    ctx.textAlign = 'center';
+    ctx.fillText('선배님', cx, cy + r * 1.28 + Math.max(15, r * .36));
+    if (!pts.length) {
+      ctx.save();
+      ctx.setLineDash([5, 7]); ctx.lineWidth = 1.5; ctx.strokeStyle = tok('--muted');
+      ctx.beginPath(); ctx.ellipse(cx, cy - r * 1.35, r * .95, r * .32, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = tok('--muted'); ctx.font = `600 13px ${tok('--f-body')}`;
+      ctx.fillText('여기에 후광', cx, cy - r * 1.35 - r * .45);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    face();
+    if (pts.length < 2) return;
+    ctx.save();
+    ctx.lineWidth = done ? 6 : 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = done ? tok('--halo') : tok('--accent');
+    if (done) { ctx.shadowColor = tok('--halo'); ctx.shadowBlur = 18; }
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function score() {
+    if (pts.length < 12) return null;
+    let mx = 0, my = 0;
+    pts.forEach(([x, y]) => { mx += x; my += y; });
+    mx /= pts.length; my /= pts.length;
+    const rs = pts.map(([x, y]) => Math.hypot(x - mx, y - my));
+    const rm = rs.reduce((a, b) => a + b, 0) / rs.length;
+    if (rm < 14) return null;
+    const dev = rs.reduce((a, b) => a + Math.abs(b - rm), 0) / rs.length / rm;
+    let turn = 0;
+    for (let i = 1; i < pts.length; i++) {
+      let d = Math.atan2(pts[i][1] - my, pts[i][0] - mx) - Math.atan2(pts[i - 1][1] - my, pts[i - 1][0] - mx);
+      if (d > Math.PI) d -= Math.PI * 2;
+      if (d < -Math.PI) d += Math.PI * 2;
+      turn += d;
+    }
+    const cover = Math.min(1, Math.abs(turn) / (Math.PI * 2));
+    return Math.max(0, Math.min(99.9, (1 - dev * 2.4) * cover * 100));
+  }
+
+  function finish() {
+    const s = score();
+    if (s === null) {
+      done = false; pts = []; draw();
+      out.textContent = '조금 더 크게, 한 바퀴 빙 둘러 그려 주세요.';
+      return;
+    }
+    done = true; draw();
+    const mine = s.toFixed(1), bonus = (100 - s).toFixed(1);
+    const line = s > 90 ? '선배님 후광이 원래 동그래서 그렇습니다.' : s < 40 ? '제 손이 떨린 건 감동 때문입니다.' : '부족한 부분은 선배님 광채가 메웠습니다.';
+    out.innerHTML = `실력 ${mine}% + 선배 보정 ${bonus}% = <span class="big">100%</span><br><span class="small muted">${line}</span>`;
+  }
+
+  function pos(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  cv.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    drawing = true; done = false; pts = [pos(e)];
+    out.textContent = '그리는 중…'; draw();
+  });
+  cv.addEventListener('pointermove', e => { if (!drawing) return; pts.push(pos(e)); draw(); });
+  const end = () => { if (!drawing) return; drawing = false; finish(); };
+  cv.addEventListener('pointerup', end);
+  cv.addEventListener('pointercancel', end);
+
+  document.getElementById('halo-reset').addEventListener('click', () => {
+    pts = []; done = false; draw();
+    out.textContent = '원을 다 그리고 손을 떼면 정확도가 나옵니다.';
+  });
+  document.getElementById('halo-auto').addEventListener('click', () => {
+    const { cx, cy, r } = head();
+    const hy = cy - r * 1.35, rnd = seeded(Date.now() % 100000 + 7);
+    pts = [];
+    const wob = .08 + rnd() * .22;
+    for (let i = 0; i <= 64; i++) {
+      const a = i / 64 * Math.PI * 2 * (0.93 + rnd() * .07);
+      const k = 1 + (rnd() - .5) * wob;
+      pts.push([cx + Math.cos(a) * r * .95 * k, hy + Math.sin(a) * r * .34 * k]);
+    }
+    finish();
+  });
+
+  new ResizeObserver(size).observe(cv);
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+})();
+</script>

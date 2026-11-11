@@ -1,0 +1,979 @@
+<title>은혜 갚는 호랑이</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Myeongjo:wght@400;800&display=swap">
+<style>
+/* Layout: 읽는 구역은 720px 한 단, 시안 구역만 1280px 띠로 넓혀 [입력칸 | 폰 6대] */
+:root{
+  --bg:#FAF7F7; --surface:#FFFFFF; --stage:#F1E8E9; --dot:rgba(34,20,23,.09);
+  --ink:#221417; --muted:#6F5F62; --line:#E6DADC; --chip:#F4EAEB;
+  --accent:#A3132F; --accent-ink:#FFFFFF; --hl:rgba(255,220,40,.55);
+  --shadow:rgba(40,10,16,.35); --scrim:rgba(14,8,10,.9); --scrim-ink:#FFFFFF; --scrim-line:rgba(255,255,255,.4);
+  --f-body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-display:"Black Han Sans","IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif;
+  --f-serif:"Nanum Myeongjo","AppleMyungjo","Batang",serif;
+  --f-hand:"Gaegu","Comic Sans MS",cursive;
+  --f-mono:"Nanum Gothic Coding",ui-monospace,Menlo,monospace;
+  /* 시안 속 제품 화면 색. 제품 자체의 룩이라 테마와 상관없이 고정 */
+  --m-crimson:#9E1530; --m-ink:#141011; --m-ink-2:#5B524C; --m-paper:#F4EFE3; --m-photo:#D8CFBD; --m-rule:#E6E0D0;
+  --m-yellow:#FFE600; --m-pink:#FF4FA0; --m-pink-a:rgba(255,79,160,.95); --m-violet:#7B2BFF; --m-night:#0B0A3B; --m-lav:#BDBDFF;
+  --m-gold:#B88A1B; --m-gold-a:rgba(184,138,27,.09); --m-cert:#FBF7EC; --m-cert-bg:#E9E0CB; --m-seal:#D7261E;
+  --m-white:#FFFFFF; --m-white-a:rgba(255,255,255,.65); --m-receipt:#FFFEF7; --m-black:#000000;
+  --m-grey:#C3C3C3; --m-grey-dk:#3A3A3A; --m-led:#39FF14; --m-led-bd:#555555; --m-frame:#121012; --m-link:#2456F0;
+  --m-ig-a:#3A1A12; --m-ig-b:#120A0C; --m-glow:rgba(255,200,120,.35); --m-dim:rgba(0,0,0,.08); --m-shade:rgba(0,0,0,.4);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141011; --surface:#1E1718; --stage:#1B1314; --dot:rgba(255,255,255,.06);
+    --ink:#F2E9EA; --muted:#B2A1A4; --line:#3A2D30; --chip:#2A1F21;
+    --accent:#FF6B83; --accent-ink:#1A0A0D; --hl:rgba(232,196,47,.38); --shadow:rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141011; --surface:#1E1718; --stage:#1B1314; --dot:rgba(255,255,255,.06);
+  --ink:#F2E9EA; --muted:#B2A1A4; --line:#3A2D30; --chip:#2A1F21;
+  --accent:#FF6B83; --accent-ink:#1A0A0D; --hl:rgba(232,196,47,.38); --shadow:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--f-body);word-break:keep-all;overflow-wrap:break-word;padding-block:40px 72px}
+body.noscroll{overflow:hidden}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap,.wide{margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:752px}
+.wide{max-width:1280px}
+h1,h2{font-family:var(--f-display);font-weight:400;line-height:1.2;text-wrap:balance;letter-spacing:-.005em}
+h1{font-size:clamp(36px,6.4vw,54px);margin:10px 0 14px}
+h1 small{font:500 15px/1 var(--f-body);color:var(--muted);vertical-align:middle;margin-left:6px}
+h2{font-size:30px;margin:0 0 18px}
+h3{font-size:18px;line-height:1.4;margin:36px 0 10px;text-wrap:balance}
+h4{text-wrap:balance}
+.eyebrow{margin:0;font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--accent)}
+.dek{margin:0 0 26px;font-size:18px;line-height:1.75;max-width:62ch}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:0;padding-top:18px;border-top:1px solid var(--line)}
+.summary dt{font-size:12.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.summary dd{margin:4px 0 0;font-size:15px;line-height:1.6}
+@media (max-width:640px){.summary{grid-template-columns:1fr;gap:14px}}
+section{margin-top:72px}
+
+/* ---------- 시안 띠 ---------- */
+.mock{margin-top:56px;padding-block:48px 60px;background-color:var(--stage);background-image:radial-gradient(circle,var(--dot) 0 1px,transparent 1.3px);background-size:18px 18px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 28px;margin-bottom:26px}
+.sec-head h2{margin:0}
+.sec-head p{margin:0;max-width:64ch;color:var(--muted);font-size:15px}
+.mock-grid{display:grid;gap:28px;align-items:start}
+@media (min-width:1100px){
+  .mock-grid{grid-template-columns:272px minmax(0,1fr)}
+  .editor{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+}
+.editor{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
+@media (min-width:640px) and (max-width:1099px){
+  .editor{grid-template-columns:1fr 1fr}
+  .editor > .span2{grid-column:1/-1}
+}
+.ed-title{margin:0;font-weight:700;font-size:16px}
+.ed-note{margin:-6px 0 0;font-size:13px;line-height:1.55;color:var(--muted)}
+.field{display:grid;gap:4px;min-width:0}
+.field > label,.levels legend{font-size:12.5px;font-weight:700;color:var(--muted)}
+.field input[type="text"],.field input[type="date"],.field textarea{width:100%;min-width:0;font:400 15px/1.4 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.field textarea{resize:vertical}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.check{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.check input{accent-color:var(--accent);margin:0}
+.levels{border:0;padding:0;margin:0;display:grid;gap:6px;min-width:0}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label{text-align:center;padding:7px 4px;font-size:13.5px;font-weight:700;line-height:1.3;cursor:pointer;border-left:1px solid var(--line)}
+.seg label:first-of-type{border-left:0}
+.seg label small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.seg input:checked + label{background:var(--accent);color:var(--accent-ink)}
+.seg input:checked + label small{color:inherit;opacity:.85}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:-3px}
+.ed-actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:10px 16px;font:700 14.5px/1.2 var(--f-body);cursor:pointer}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:10px 14px;font:500 14px/1.2 var(--f-body);cursor:pointer}
+.swipe-hint{display:none;margin:0 0 10px;font-size:13px;color:var(--muted)}
+
+.shots-scroll{min-width:0}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,294px);justify-content:center;gap:36px 22px}
+.shot{margin:0;width:294px;display:flex;flex-direction:column;gap:12px}
+.shot figcaption{display:flex;gap:10px;font-size:13.5px;line-height:1.55;color:var(--muted)}
+.shot figcaption b{display:block;font-size:15px;color:var(--ink)}
+.sc-no{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font:700 12px/1 var(--f-mono);margin-top:1px}
+.shot.flash .phone{animation:flash 1s ease}
+@keyframes flash{50%{box-shadow:0 0 0 6px var(--accent)}}
+@media (max-width:660px){
+  .swipe-hint{display:block}
+  .shots-scroll{overflow-x:auto;scroll-snap-type:x mandatory;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:4px max(16px,env(safe-area-inset-left,0px)) 14px}
+  .shots{display:flex;width:max-content;gap:16px}
+  .shot{scroll-snap-align:center}
+}
+
+/* ---------- 폰 프레임 ---------- */
+.phone{position:relative;width:294px;height:594px;border:7px solid var(--m-frame);border-radius:36px;background:var(--m-frame);overflow:hidden;box-shadow:0 22px 40px -22px var(--shadow)}
+.screen{position:relative;width:280px;height:580px;border-radius:29px;overflow:hidden;display:flex;flex-direction:column;gap:10px;padding:28px 16px 16px;font-family:var(--f-body);color:var(--m-ink);--bb:rgba(255,255,255,.38);--bf:var(--m-white)}
+.screen.light{--bb:rgba(0,0,0,.14);--bf:var(--m-ink)}
+.screen p{margin:0}
+.screen button{font-family:var(--f-body)}
+.bars{position:absolute;top:10px;left:12px;right:12px;display:flex;gap:4px;z-index:5}
+.bars i{flex:1;height:3px;border-radius:2px;background:var(--bb)}
+.bars i.done,.bars i.on{background:var(--bf)}
+
+/* 1 입장 */
+.s-intro{background-color:var(--m-night);background-image:radial-gradient(circle,var(--m-white) 0 1px,transparent 1.5px),radial-gradient(circle,var(--m-yellow) 0 1px,transparent 1.5px);background-size:36px 36px,58px 58px;background-position:0 0,17px 23px;color:var(--m-white);text-align:center;align-items:center;gap:12px}
+.marq{align-self:stretch;margin:0 -16px;background:var(--m-crimson);color:var(--m-yellow);font:700 12px/1 var(--f-body);padding:7px 0;overflow:hidden;white-space:nowrap}
+.marq-track{display:inline-flex;animation:marq 16s linear infinite}
+.marq-track span{padding-right:28px}
+@keyframes marq{to{transform:translateX(-50%)}}
+.sparkles i{position:absolute;font-style:normal;font-size:15px;color:var(--m-yellow);animation:tw 1.6s ease-in-out infinite}
+.sparkles i:nth-child(2n){animation-delay:.5s;color:var(--m-white)}
+.sparkles i:nth-child(3n){animation-delay:1s}
+@keyframes tw{50%{opacity:.15;transform:scale(.6)}}
+.wordart{margin-top:10px!important;font:400 42px/1.08 var(--f-display);background:linear-gradient(180deg,var(--m-white) 8%,var(--m-yellow) 38%,var(--m-pink) 70%,var(--m-violet) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1.5px var(--m-black);filter:drop-shadow(3px 4px 0 var(--m-black));transform:skewY(-5deg) rotate(-2deg);max-width:100%}
+.tag-yellow{background:var(--m-yellow);color:var(--m-night);font:700 14px/1 var(--f-body);padding:6px 12px;transform:rotate(-3deg);box-shadow:3px 3px 0 var(--m-pink)}
+.warn{background:var(--m-yellow);color:var(--m-ink);font:700 12.5px/1.55 var(--f-body);padding:9px 11px;text-align:left;border:6px solid transparent;border-image:repeating-linear-gradient(45deg,var(--m-ink) 0 7px,var(--m-yellow) 7px 14px) 6}
+.btn95{background:var(--m-grey);color:var(--m-black);font:700 14px/1.2 var(--f-body);padding:9px 18px;border:2px solid;border-color:var(--m-white) var(--m-grey-dk) var(--m-grey-dk) var(--m-white);box-shadow:1px 1px 0 var(--m-black);cursor:pointer}
+.btn95:active{border-color:var(--m-grey-dk) var(--m-white) var(--m-white) var(--m-grey-dk)}
+.intro-foot{margin-top:auto;display:grid;gap:7px;justify-items:center}
+.counter{display:flex;align-items:center;gap:2px;font-size:10.5px;color:var(--m-white)}
+.counter span{margin-right:6px}
+.counter b{width:15px;height:21px;display:grid;place-items:center;background:var(--m-black);color:var(--m-led);font:700 13px/1 var(--f-mono);border:1px solid var(--m-led-bd)}
+.intro-foot p{font-size:10px;line-height:1.5;color:var(--m-lav)}
+
+/* 2 속보 */
+.s-news{background:var(--m-paper);font-family:var(--f-serif);gap:7px;padding-top:26px}
+.np-head{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:3px double var(--m-ink);padding-bottom:4px}
+.np-name{font:800 30px/1 var(--f-serif);letter-spacing:-.04em}
+.np-side{font:700 9.5px/1.2 var(--f-body);border:1px solid var(--m-ink);padding:2px 4px;margin-bottom:3px}
+.np-meta{display:flex;justify-content:space-between;gap:6px;font:500 9.5px/1.3 var(--f-body);color:var(--m-ink-2)}
+.np-hl{font:800 17px/1.32 var(--f-serif);letter-spacing:-.03em}
+.np-flag{display:inline-block;background:var(--m-seal);color:var(--m-white);font:700 11px/1 var(--f-body);padding:4px 5px 3px;vertical-align:2px}
+.np-photo{flex:none;height:108px;display:grid;place-items:center;background-color:var(--m-photo);background-image:radial-gradient(circle,rgba(20,16,17,.3) 0 1px,transparent 1.4px);background-size:4px 4px;border:1px solid var(--m-ink)}
+.np-photo span{font-size:56px;line-height:1;filter:grayscale(1) contrast(1.2)}
+.np-cap{margin-top:-3px!important;font:500 9.5px/1.4 var(--f-body);color:var(--m-ink-2)}
+.np-body{font:400 11.5px/1.62 var(--f-serif);text-align:justify;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.np-by{margin-top:-4px!important;font:700 9.5px/1.2 var(--f-body);text-align:right}
+.np-rank{margin-top:auto;border-top:1.5px solid var(--m-ink);padding-top:6px;font-family:var(--f-body)}
+.np-rank b{font-size:10.5px}
+.np-rank ol{margin:3px 0 0;padding-left:16px;font-size:10px;line-height:1.55}
+.np-rank li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 3 영수증 */
+.s-receipt{background-color:var(--m-crimson);background-image:repeating-linear-gradient(135deg,var(--m-dim) 0 2px,transparent 2px 9px);align-items:center;justify-content:center;gap:14px}
+.rc-wrap{filter:drop-shadow(0 10px 14px var(--m-shade));transform:rotate(-1.6deg)}
+.receipt{--z:7px;width:236px;background:var(--m-receipt);color:var(--m-ink);font:400 10.5px/1.55 var(--f-mono);padding:16px 14px 26px;-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--z)) 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--z)) 100%}
+.rc-title{text-align:center;font:700 17px/1.2 var(--f-body);letter-spacing:.08em}
+.rc-en{margin-top:2px!important;text-align:center;font-size:9px;letter-spacing:.14em}
+.rc-meta{margin-top:8px!important;font-size:9.5px;text-align:center}
+.rc-rule{border-top:1.5px dashed var(--m-ink);margin:8px 0}
+.rc-row{display:flex;justify-content:space-between;gap:10px}
+.rc-row span:first-child{min-width:0}
+.rc-row span:last-child{text-align:right;white-space:nowrap}
+.rc-total{font-weight:700;font-size:12px;margin-bottom:3px}
+.rc-bar{height:30px;margin:10px 0 5px;background:repeating-linear-gradient(90deg,var(--m-ink) 0 2px,transparent 2px 3px,var(--m-ink) 3px 4px,transparent 4px 7px,var(--m-ink) 7px 10px,transparent 10px 11px,var(--m-ink) 11px 12px,transparent 12px 15px)}
+.rc-foot{font-size:9px;line-height:1.5}
+.rc-sign{margin-top:6px!important;text-align:right;font-size:9.5px}
+.rc-sign span{font:700 19px/1 var(--f-hand);margin-left:6px}
+.rc-note{font:700 19px/1 var(--f-hand);color:var(--m-yellow);transform:rotate(-3deg)}
+
+/* 4 상장 */
+.s-cert{background:var(--m-cert-bg);padding:26px 12px 12px}
+.cert{position:relative;flex:1;display:flex;flex-direction:column;gap:8px;background:var(--m-cert);border:3px double var(--m-gold);box-shadow:inset 0 0 0 5px var(--m-cert),inset 0 0 0 6px var(--m-gold);padding:20px 18px 16px;font-family:var(--f-serif);overflow:hidden}
+.cert::before{content:"恩";position:absolute;inset:0;display:grid;place-items:center;font:800 190px/1 var(--f-serif);color:var(--m-gold-a);pointer-events:none}
+.ct-no{font-size:10px}
+.ct-title{margin-top:6px!important;text-align:center;font:800 32px/1 var(--f-serif);letter-spacing:.5em;padding-left:.5em}
+.ct-award{margin-top:2px!important;text-align:center;font:800 13.5px/1.4 var(--f-serif);color:var(--m-crimson)}
+.ct-who{margin-top:6px!important;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:10.5px}
+.ct-who b{font-size:18px;letter-spacing:.3em;margin-right:-.3em}
+.ct-body{margin-top:4px!important;font:400 12.5px/1.95 var(--f-serif);text-align:justify;position:relative}
+.ct-date{margin-top:auto!important;text-align:center;font-size:11.5px}
+.ct-from{position:relative;display:flex;justify-content:center;margin-top:2px}
+.ct-from p{text-align:center;font:400 11.5px/1.5 var(--f-serif)}
+.ct-from b{font-size:15px;font-weight:800;letter-spacing:.15em}
+.seal{position:absolute;right:4px;bottom:-6px;width:50px;height:50px;border:2.5px solid var(--m-seal);border-radius:7px;color:var(--m-seal);display:grid;grid-template-columns:1fr 1fr;place-items:center;font:800 14px/1 var(--f-serif);transform:rotate(-9deg);opacity:.85;mix-blend-mode:multiply}
+.seal i{font-style:normal}
+
+/* 5 또 사주실 거죠? */
+.s-question{background-color:var(--m-pink);background-image:radial-gradient(circle,var(--m-yellow) 0 3px,transparent 3.5px);background-size:24px 24px;color:var(--m-white);align-items:center;text-align:center;gap:6px}
+.q-emoji{margin-top:16px!important;font-size:52px;line-height:1}
+.q-to{margin-top:4px!important;font:700 14px/1.3 var(--f-body);color:var(--m-ink);background:var(--m-white);padding:4px 10px;border-radius:999px}
+.q-text{margin-top:4px!important;font:400 25px/1.25 var(--f-display);color:var(--m-white);text-shadow:-2px -2px 0 var(--m-ink),2px -2px 0 var(--m-ink),-2px 2px 0 var(--m-ink),2px 2px 0 var(--m-ink),4px 5px 0 var(--m-ink)}
+.arena{position:relative;flex:none;width:248px;height:200px;margin-top:4px}
+.btn-yes{position:absolute;left:40px;top:66px;z-index:2;font:400 22px/1 var(--f-display)!important;background:var(--m-yellow);color:var(--m-ink);border:3px solid var(--m-ink);border-radius:12px;padding:12px 18px;box-shadow:4px 4px 0 var(--m-ink);transform:scale(var(--grow,1));transition:transform .25s;cursor:pointer}
+.btn-no{position:absolute;left:156px;top:76px;font:700 14px/1 var(--f-body);background:var(--m-white);color:var(--m-ink);border:2px solid var(--m-ink);border-radius:10px;padding:10px 12px;white-space:nowrap;cursor:pointer;touch-action:none;transition:left .18s,top .18s}
+.q-hint{font:700 11px/1.3 var(--f-body);color:var(--m-ink);background:var(--m-yellow);padding:3px 8px}
+.agree{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--m-pink-a);color:var(--m-ink)}
+.agree-stamp{font:400 40px/1 var(--f-display);color:var(--m-seal);border:5px solid var(--m-seal);padding:10px 16px;background:var(--m-white-a);transform:rotate(-8deg);animation:stamp .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stamp{from{transform:rotate(-8deg) scale(2.2);opacity:0}}
+.agree-sub{font:700 14px/1.6 var(--f-body);text-align:center}
+.agree-retry{font:700 12px/1 var(--f-body);background:transparent;color:var(--m-ink);border:1.5px solid var(--m-ink);border-radius:999px;padding:7px 12px;cursor:pointer}
+.confetti{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:7px;height:11px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(620px) rotate(540deg)}}
+
+/* 6 보은권 */
+.s-coupon{background-color:var(--m-yellow);background-image:repeating-linear-gradient(-45deg,var(--m-dim) 0 10px,transparent 10px 20px);gap:12px}
+.cp-top{margin-top:4px!important;text-align:center;font:700 19px/1.25 var(--f-hand);transform:rotate(-2deg)}
+.cp-wrap{filter:drop-shadow(4px 4px 0 var(--m-ink))}
+.ticket{background:var(--m-white);border-radius:12px;overflow:hidden;-webkit-mask:radial-gradient(circle 10px at 0 46px,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 46px,#0000 98%,#000) right/51% 100% no-repeat;mask:radial-gradient(circle 10px at 0 46px,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 46px,#0000 98%,#000) right/51% 100% no-repeat}
+.tk-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--m-crimson);color:var(--m-white)}
+.tk-head p{font:800 22px/1 var(--f-serif);letter-spacing:.1em}
+.tk-head span{font:700 9.5px/1 var(--f-mono);opacity:.85}
+.tk-body{display:grid;gap:8px;padding:12px 16px 10px}
+.tk-to{font:700 15px/1.3 var(--f-body)}
+.tk-desc{margin-top:-4px!important;font-size:11.5px;line-height:1.45;color:var(--m-ink-2)}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:2px dashed var(--m-ink);padding-top:10px}
+.chips input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.chips label{font:700 12px/1.2 var(--f-body);text-align:center;padding:9px 4px;border:1.5px solid var(--m-ink);border-radius:8px;background:var(--m-white);cursor:pointer}
+.chips input:checked + label{background:var(--m-ink);color:var(--m-yellow)}
+.chips input:focus-visible + label{outline:2px solid var(--m-crimson);outline-offset:2px}
+.tk-result{min-height:2.6em;font:700 15px/1.3 var(--f-hand);color:var(--m-crimson)}
+.tk-foot{display:flex;flex-direction:column;gap:2px;padding:8px 16px 12px;font-size:9.5px;line-height:1.4;color:var(--m-ink-2);border-top:1px solid var(--m-rule)}
+.cp-bottom{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cp-make{font:700 12.5px/1.2 var(--f-body);border:2px dashed var(--m-ink);border-radius:999px;padding:8px 12px;background:var(--m-white-a)}
+.cp-make em{font-style:normal;font-size:10px;background:var(--m-ink);color:var(--m-yellow);padding:1px 5px;border-radius:4px;margin-left:4px}
+.cp-count{font:700 10px/1 var(--f-mono)}
+
+/* ---------- 한 폰으로 넘겨보기 ---------- */
+.viewer{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--scrim);color:var(--scrim-ink);padding:calc(env(safe-area-inset-top,0px) + 12px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(16px,env(safe-area-inset-left,0px))}
+.v-top{width:min(100%,520px);display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
+.v-top p{margin:0;font-weight:700}
+.v-close{background:transparent;color:var(--scrim-ink);border:1px solid var(--scrim-line);border-radius:999px;padding:6px 14px;font:500 14px/1.2 var(--f-body);cursor:pointer}
+.v-stage{display:flex;align-items:center;gap:20px}
+.v-nav{width:46px;height:46px;border-radius:50%;border:1px solid var(--scrim-line);background:transparent;color:var(--scrim-ink);font:400 26px/1 var(--f-body);cursor:pointer}
+.v-nav:disabled{opacity:.3;cursor:default}
+.v-phone{position:relative;flex:none}
+.v-phone .phone{position:absolute;left:0;top:0;transform-origin:0 0}
+.v-help{margin:0;font-size:13px;opacity:.75;text-align:center}
+@media (max-width:600px){.v-nav{display:none}}
+
+/* ---------- 리서치·기획 ---------- */
+.finds{margin:0;padding-left:1.15em;display:grid;gap:8px}
+.cite{margin-left:4px;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;white-space:nowrap}
+.cite:hover{text-decoration:underline}
+.apply{margin:14px 0 0;padding:12px 14px;background:var(--chip);border-radius:10px;font-size:15px;line-height:1.65}
+.apply b{display:block;font-size:12px;letter-spacing:.06em;color:var(--accent)}
+mark{background:linear-gradient(transparent 58%,var(--hl) 58%);color:inherit;padding:0 1px}
+.tbl-wrap{overflow-x:auto;margin-top:6px}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14.5px;line-height:1.6}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+td:first-child{font-weight:700;white-space:nowrap}
+.lv-table td:first-child{color:var(--muted);font-weight:500;font-size:13.5px}
+.principles{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.principles b{display:block}
+.entry{display:flex;gap:28px;align-items:flex-start}
+.entry > div{min-width:0}
+.entry ol{margin:0 0 14px;padding-left:1.25em;display:grid;gap:6px}
+.chipset{display:flex;flex-wrap:wrap;gap:8px}
+.chipset span{background:var(--chip);border-radius:999px;padding:4px 12px;font-size:14px}
+@media (max-width:560px){.entry{flex-direction:column;align-items:center}.entry > div{align-self:stretch}}
+.ig{position:relative;flex:none;width:168px;max-width:100%;aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:linear-gradient(160deg,var(--m-ig-a),var(--m-ig-b))}
+.ig-food{position:absolute;inset:20% 8% 30%;display:grid;place-items:center;font-size:64px;background:radial-gradient(circle at 50% 45%,var(--m-glow),transparent 65%)}
+.ig-cap{position:absolute;left:12px;right:12px;top:16px;font:700 12px/1.5 var(--f-body);color:var(--m-white)}
+.ig-cap span{background:var(--m-white);color:var(--m-ink);border-radius:4px;padding:1px 4px}
+.ig-sticker{position:absolute;left:50%;bottom:15%;transform:translateX(-50%) rotate(-3deg);background:var(--m-white);color:var(--m-link);font:700 11px/1 var(--f-body);padding:7px 9px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 6px var(--m-shade)}
+.ments{list-style:none;margin:0;padding:0}
+.ments li{display:grid;grid-template-columns:80px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.ments .kind{font-size:12px;font-weight:700;color:var(--muted)}
+.ments p{margin:0;font-size:15.5px;line-height:1.55}
+.copy{font:500 12.5px/1.2 var(--f-body);background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer}
+@media (max-width:520px){.ments li{grid-template-columns:minmax(0,1fr) auto}.ments .kind{grid-column:1/-1;margin-bottom:-8px}}
+.phases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.phase{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.phase h4{margin:0 0 8px;font-size:16px}
+.phase h4 span{margin-left:6px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.phase ul{margin:0;padding-left:1.1em;display:grid;gap:5px;font-size:15px;line-height:1.6}
+@media (max-width:640px){.phases{grid-template-columns:1fr}}
+.not-do{margin:14px 0 0;font-size:15px;color:var(--muted)}
+code{font-family:var(--f-mono);font-size:.9em}
+pre{margin:10px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font:400 13px/1.65 var(--f-mono);color:var(--ink)}
+.checks{margin:0;padding-left:1.15em;display:grid;gap:6px}
+.decide{margin:0;padding-left:1.3em;display:grid;gap:10px}
+.sources ol{margin:0;padding-left:1.3em;display:grid;gap:4px;font-size:14px;line-height:1.6;color:var(--muted)}
+.sources a{color:var(--ink)}
+.fine{margin-top:28px;font-size:13px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px}
+@media (prefers-reduced-motion: reduce){
+  .marq-track,.sparkles i,.agree-stamp,.shot.flash .phone{animation:none}
+  .btn-yes,.btn-no{transition:none}
+}
+</style>
+
+<header class="wrap">
+  <p class="eyebrow">밥약 감사 스토리용 사이트 · 기획안과 시안 v0.1 · 2026.11.10</p>
+  <h1>은혜 갚는 호랑이<small>(가제)</small></h1>
+  <p class="dek">밥약 끝나고 올리는 감사 스토리에 링크를 하나 붙입니다. 누르면 사준 선배를 신문 1면, 영수증, 상장으로 치켜세우는 1분짜리 병맛 헌정관이 열려요. 선배가 폰으로 끝까지 넘기면서 세 번 웃고, 캡처해서 자기 스토리에 다시 올리게 만드는 게 목표입니다.</p>
+  <dl class="summary">
+    <div><dt>무엇</dt><dd>스토리 링크 스티커로 여는 선배 헌정 페이지. 6장면을 탭으로 넘깁니다.</dd></div>
+    <div><dt>누가 보나</dt><dd>사준 선배가 폰(인스타 인앱 브라우저)으로 먼저 열고, 내 스토리를 본 친구들도 누릅니다.</dd></div>
+    <div><dt>잘 됐다는 신호</dt><dd>선배가 끝까지 넘기고, 캡처해서 리그램하거나 "ㅋㅋ 이거 뭐야" DM이 옵니다.</dd></div>
+  </dl>
+</header>
+
+<section class="mock" id="mock" aria-labelledby="mock-h">
+  <div class="wide">
+    <div class="sec-head">
+      <h2 id="mock-h">시안</h2>
+      <p>입력칸을 바꾸면 6장면이 바로 바뀝니다. 실제 사이트는 폰 한 화면에서 탭으로 넘기는 구조라서 '한 폰으로 넘겨보기'로 흐름을 체험해 보세요. 5번의 '아니요'도 눌러 보시고요.</p>
+    </div>
+    <div class="mock-grid">
+      <form class="editor" id="editor" autocomplete="off">
+        <p class="ed-title span2">내용 바꿔보기</p>
+        <p class="ed-note span2">예시값이고 인물은 가상이에요. 저장되지 않습니다.</p>
+        <div class="field"><label for="f-senior">선배 이름 (선배님은 자동)</label><input type="text" id="f-senior" maxlength="10"></div>
+        <div class="field"><label for="f-junior">내 이름</label><input type="text" id="f-junior" maxlength="10"></div>
+        <div class="row2">
+          <div class="field"><label for="f-major">학과</label><input type="text" id="f-major" maxlength="12"></div>
+          <div class="field"><label for="f-year">학번</label><input type="text" id="f-year" inputmode="numeric" maxlength="2"></div>
+        </div>
+        <div class="field"><label for="f-menu">먹은 메뉴</label><input type="text" id="f-menu" maxlength="24"></div>
+        <div class="row2">
+          <div class="field"><label for="f-place">장소</label><input type="text" id="f-place" maxlength="12"></div>
+          <div class="field"><label for="f-date">날짜</label><input type="date" id="f-date"></div>
+        </div>
+        <div class="field">
+          <label for="f-price">금액 (원)</label>
+          <input type="text" id="f-price" inputmode="numeric" maxlength="7">
+          <label class="check" for="f-showprice"><input type="checkbox" id="f-showprice"> 영수증에 금액 공개</label>
+        </div>
+        <div class="field span2"><label for="f-note">한마디 (속보 인터뷰로 들어가요)</label><textarea id="f-note" rows="2" maxlength="50"></textarea></div>
+        <fieldset class="levels span2">
+          <legend>주접 레벨</legend>
+          <div class="seg">
+            <input type="radio" name="level" id="f-level-1" value="1"><label for="f-level-1">1<small>예의 바름</small></label>
+            <input type="radio" name="level" id="f-level-2" value="2"><label for="f-level-2">2<small>주접</small></label>
+            <input type="radio" name="level" id="f-level-3" value="3"><label for="f-level-3">3<small>광기</small></label>
+          </div>
+        </fieldset>
+        <div class="ed-actions span2">
+          <button type="button" class="btn-primary open-viewer">한 폰으로 넘겨보기</button>
+          <button type="button" class="btn-ghost" id="reset">예시값으로</button>
+        </div>
+      </form>
+      <div class="shots-scroll">
+        <p class="swipe-hint">옆으로 밀어서 6장면을 넘겨 보세요.</p>
+        <div class="shots" id="shots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="research" aria-labelledby="research-h">
+  <h2 id="research-h">리서치에서 건진 것</h2>
+
+  <h3>고대 밥약은 이렇게 돌아간다</h3>
+  <ul class="finds">
+    <li>'밥'과 '약속'의 줄임말. 고려대 경영대 학생홍보대사는 "새내기가 입학하면 밥약이라는 걸 한다"고 소개하면서, 고연전 뒤풀이 때 선배들이 안암 일대 음식점을 후원해 준 일도 함께 꼽았습니다.<a class="cite" href="https://biz.korea.ac.kr/news/media_view.html?no=305" target="_blank" rel="noopener">아시아타임즈 2018</a></li>
+    <li>고대생 칼럼에 따르면 3월엔 새내기가 밥 걱정할 필요가 없을 만큼 밥약이 활발합니다. 메뉴는 후배가 먼저 고르면 센스 있고, 후식은 후배가 눈치껏 삽니다.<a class="cite" href="https://orbi.kr/00015666687" target="_blank" rel="noopener">오르비 칼럼</a></li>
+    <li>답례는 '보은'. 보통 "2밥약에 1보은"이고, 한 번 얻어먹은 선배에게는 안 해도 된다고 합니다. 대학내일 밥약 가이드는 식사 후 커피라도 사라고 권합니다.<a class="cite" href="https://www.univ20.com/Twenties/Detail/3841" target="_blank" rel="noopener">대학내일 2026</a></li>
+  </ul>
+  <p class="apply"><b>적용</b>보은권(2밥약 1보은), 메뉴 고르기, 참살이길·안암 같은 지명, 호랑이가 전부 그대로 재료가 됩니다.</p>
+
+  <h3>선배에게 밥약은 '돈 쓰는 일'이다</h3>
+  <ul class="finds">
+    <li>잡코리아·알바몬 설문에서 대학생 81.9%가 밥약을 후회한 적이 있다고 답했습니다. 밥약 꼴불견 1위는 '밥만 얻어먹고 인사도 없는 먹튀 후배'(33.5%), 6위는 '사줬더니 시큰둥하게 먹는 태도'(7.1%), 8위는 '다른 선배가 사준 메뉴와 비교'(3.7%).<a class="cite" href="https://digitalchosun.dizzo.com/site/data/html_dir/2016/06/16/2016061611707.html" target="_blank" rel="noopener">디지틀조선</a></li>
+    <li>KBS 취재에서 한 2학년 선배는 "한 끼 먹을 때마다 2~3만 원씩 쓰면 용돈 받은 게 순식간에 없어진다"고 했습니다.<a class="cite" href="https://v.daum.net/v/2JdQ76tssh" target="_blank" rel="noopener">KBS 2025.7</a></li>
+  </ul>
+  <p class="apply"><b>적용</b><mark>이 페이지가 선배에게 돌려줄 것은 '사준 보람'입니다.</mark> 먹튀가 아니라는 공개 인증이고, 맛있게 먹었다는 증거예요. 다른 선배와 비교하는 드립은 쓰지 않습니다.</p>
+
+  <h3>감사 스토리와 주접의 문법</h3>
+  <ul class="finds">
+    <li>대학내일 가이드가 "SNS 스토리에 선배를 태그해서 감사하다고 올려보라"고 권할 만큼, 감사 스토리는 이제 밥약의 정석입니다.<a class="cite" href="https://www.univ20.com/Twenties/Detail/3841" target="_blank" rel="noopener">대학내일</a></li>
+    <li>커뮤니티 글을 보면 기본형은 음식 사진, 선배 태그, "밥약 감사합니다🫶" 한 줄 정도입니다.<a class="cite" href="https://www.instiz.net/name/62301601" target="_blank" rel="noopener">인스티즈</a></li>
+    <li>주접은 과장과 말장난. 가수 김재환의 포스트 담당자가 쓴 "레늄(Re), 알루미늄(Al)으로 만들어진 게 분명해. 왜냐고? 진짜(Real)니까" 같은 원소 말장난이 대표적입니다.<a class="cite" href="https://www.careet.net/882" target="_blank" rel="noopener">캐릿 2022</a></li>
+  </ul>
+  <p class="apply"><b>적용</b>스토리 본문은 지금처럼 한 줄로 두고, 링크 스티커가 '더보기' 역할을 합니다. 주접 강도는 선배와의 거리에 맞춰 3단계 중에서 고릅니다.</p>
+
+  <h3>참고한 바이브코딩 선물 사이트</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>사례</th><th>재미 포인트</th><th>여기서 가져온 것</th></tr></thead>
+      <tbody>
+        <tr><td>고백 YES/NO 사이트</td><td>NO에 손을 대면 버튼이 도망가서 결국 YES를 누르게 됨. 관련 릴스 조회수 5,300만 회 이상<a class="cite" href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿</a></td><td>5번 "또 사주실 거죠?". 폰에는 마우스 올리기가 없어서 누르는 순간 순간이동시킴</td></tr>
+        <tr><td>Valentine Message Generator</td><td>NO가 피할 때마다 YES 버튼이 점점 커짐<a class="cite" href="https://www.producthunt.com/products/valentine-message-generator" target="_blank" rel="noopener">Product Hunt</a></td><td>5번에서 '네' 버튼이 커짐</td></tr>
+        <tr><td>랜덤 데이트 뽑기</td><td>포춘쿠키를 뭘 골라도 결과는 '나를 만나야 한다'<a class="cite" href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿</a></td><td>답정너 구조. 6번 보은권은 뭘 골라도 내가 갚으러 감</td></tr>
+        <tr><td>부모님 로또 당첨 사이트</td><td>번호를 넣으면 아버지 사진, 환갑 축하, 용돈이 나옴. 아버지의 로또 취미에 맞춤<a class="cite" href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿</a></td><td>받는 사람 맞춤. 메뉴·장소·학번이 모든 장면에 박힘</td></tr>
+        <tr><td>친구 생일 축하 페이지</td><td>받는 사람이 원하는 선물을 직접 고름<a class="cite" href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿</a></td><td>6번에서 선배가 보은 메뉴를 고름</td></tr>
+        <tr><td>가짜 배달앱</td><td>익숙한 앱 화면을 패러디<a class="cite" href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿</a></td><td>신문, 영수증, 상장처럼 다들 아는 서식을 비틂 (2·3·4번)</td></tr>
+        <tr><td>Cameron's World, Neocities</td><td>90년대 개인 홈페이지의 반짝이, 방문자 카운터, 워드아트를 일부러 재현<a class="cite" href="https://www.avclub.com/gaze-deeply-into-this-loving-tribute-to-the-heyday-of-g-1798283375" target="_blank" rel="noopener">AV Club</a><a class="cite" href="https://www.vice.com/en/article/neocities-is-recreating-the-garish-web-10-creativity-of-geocities" target="_blank" rel="noopener">VICE</a></td><td>1번 입장 화면의 밤티 감성</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="wrap" id="plan" aria-labelledby="plan-h">
+  <h2 id="plan-h">기획</h2>
+
+  <h3>만들 때 지킬 것</h3>
+  <ul class="principles">
+    <li><b>3초 안에 첫 웃음.</b>로딩 화면이나 설명 없이 첫 장면부터 개그로 시작합니다.</li>
+    <li><b>한 장면은 한 화면, 캡처 한 장.</b>스크롤 없이 폰 한 화면에 끝나야 선배가 캡처해서 리그램하기 좋습니다.</li>
+    <li><b>익숙한 서식을 비튼다.</b>신문, 영수증, 상장, 쿠폰. 다들 아는 형식이라 설명이 필요 없습니다.</li>
+    <li><b>만드는 데 폰으로 1분.</b>밥 먹고 바로 스토리를 올리니까 입력은 이름, 메뉴, 장소, 한마디 정도면 충분합니다.</li>
+    <li><b>밤티는 일부러, 쓰기 편한 건 제대로.</b>워드아트와 방문자 카운터는 촌스럽게, 글자 크기와 버튼 누르는 영역은 제대로 만듭니다.</li>
+    <li><b>스토리처럼 탭으로 넘긴다.</b>스토리에서 들어왔으니 화면 오른쪽을 누르면 다음 장면. 버튼을 눌러야 하는 장면이 있어서 자동으로 넘어가지는 않습니다.</li>
+  </ul>
+
+  <h3>스토리에 이렇게 붙인다</h3>
+  <div class="entry">
+    <div class="ig" role="img" aria-label="음식 사진 위에 선배 태그와 링크 스티커가 붙은 스토리 예시">
+      <div class="ig-cap"><span>@선배계정</span><br>밥약 감사합니다🫶</div>
+      <div class="ig-food" aria-hidden="true">🌶️</div>
+      <div class="ig-sticker">🔗 김호랑 선배님 헌정관</div>
+    </div>
+    <div>
+      <ol>
+        <li>평소처럼 음식 사진으로 스토리를 올리고 선배를 태그합니다.</li>
+        <li>감사 멘트를 한 줄 씁니다. 아래 멘트 뱅크에서 골라도 됩니다.</li>
+        <li>링크 스티커에 헌정관 링크를 붙이고, 스티커 문구는 주소 대신 아래 같은 걸로 바꿉니다.</li>
+      </ol>
+      <div class="chipset"><span>🐯 김호랑 선배님 헌정관</span><span>⚠ 선배님만 누르세요</span><span>밥약일보 속보 보기</span><span>은혜 영수증 발급됨</span></div>
+    </div>
+  </div>
+
+  <h3>주접 레벨 3단계</h3>
+  <p>처음 본 선배나 조교님급이면 1, 과·동아리 선배면 2, 친한 선배면 3을 권합니다. 같은 장면이 레벨에 따라 이렇게 바뀝니다.</p>
+  <div class="tbl-wrap">
+    <table class="lv-table">
+      <thead><tr><th>장면</th><th>1 예의 바름</th><th>2 주접</th><th>3 광기</th></tr></thead>
+      <tbody id="lv-body"></tbody>
+    </table>
+  </div>
+
+  <h3>멘트 뱅크</h3>
+  <p>스토리 본문이나 헌정관 속 문구로 쓸 수 있는 주접 멘트입니다. 복사해서 바로 쓰세요.</p>
+  <ul class="ments">
+    <li><span class="kind">과장</span><p>선배님 카드 꺼내실 때 후광이 비쳐서 식당 조명 하나 꺼도 될 뻔했습니다</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">말장난</span><p>선배님은 은(Ag)으로 만들어진 게 분명해요. 왜냐고요? 너무 은혜로우셔서</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">고대 드립</span><p>호랑이는 죽어서 가죽을 남기고, 선배님은 밥약으로 전설을 남기십니다</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">고대 드립</span><p>고연전 응원보다 오늘 밥약이 더 벅찼습니다 (진심)</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">메뉴</span><p>메뉴 고르라고 하신 순간, 인생에서 처음으로 선택권을 존중받았습니다</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">메뉴</span><p>오늘 먹은 것 중 제일 맛있던 건 선배님의 "편하게 먹어" 한마디</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">과장</span><p>밥은 제가 먹었는데 왜 선배님이 빛나시죠</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">과장</span><p>오늘부로 제 위장 지분 100%는 선배님 소유입니다</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">보은</span><p>2밥약 1보은이 국룰이지만, 선배님께는 1밥약 10보은 하겠습니다</p><button type="button" class="copy">복사</button></li>
+    <li><span class="kind">보은</span><p>은혜 갚은 까치는 종을 쳤고, 저는 사이트를 만들었습니다</p><button type="button" class="copy">복사</button></li>
+  </ul>
+</section>
+
+<section class="wrap" id="build" aria-labelledby="build-h">
+  <h2 id="build-h">만드는 법</h2>
+  <div class="phases">
+    <div class="phase">
+      <h4>1단계 MVP<span>주말 1~2일</span></h4>
+      <ul>
+        <li>폰에서 쓰는 만들기 화면 → 링크 생성 → 복사</li>
+        <li>6장면 헌정관. 탭으로 넘기고, 데스크톱에서도 안 깨지게</li>
+        <li>내용은 링크 안에 담음. 서버와 DB가 없어서 비용 0원</li>
+        <li>사진 대신 메뉴에 맞는 이모지 (마라탕이면 🌶️)</li>
+        <li>Vercel 무료 배포, 카톡 공유용 미리보기 이미지 1장</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <h4>2단계<span>반응이 좋으면</span></h4>
+      <ul>
+        <li>짧은 링크(/h/abc123)와 음식 사진 업로드. DB와 파일 저장소 필요 (Supabase 정도)</li>
+        <li>진짜 방문자 카운터, 선배 친구들이 남기는 "저도 사주세요" 방명록</li>
+        <li>다른 고대생도 쓰는 '나도 만들기' 버튼. 스토리를 본 사람이 다음 사용자가 됨</li>
+        <li>선배 답장 한 줄 ("다음엔 국밥이다")</li>
+      </ul>
+    </div>
+  </div>
+  <p class="not-do">안 할 것: 로그인, 결제, 학교 공식 로고, 자동 재생되는 소리.</p>
+
+  <h3>기술과 데이터 형식</h3>
+  <p>Next.js(App Router)와 TypeScript로 만들고 Vercel에 배포하는 걸 추천합니다. 1단계 화면은 만들기(<code>/new</code>)와 헌정관(<code>/h</code>) 두 개뿐이고, 2단계에서 DB를 붙여도 구조를 갈아엎지 않아도 됩니다. 헌정관 하나의 내용은 아래 형식으로 정해 두고, 1단계에선 이걸 그대로 링크(<code>/h?d=…</code>)에 담습니다. 링크는 300자 안팎이고, 스티커 문구로 가려지니 길이는 문제없습니다.</p>
+<pre><code>type Tribute = {
+  v: 1;              // 링크 형식 버전
+  senior: string;    // 선배 이름 ("선배님"은 화면에서 붙임)
+  major?: string;    // 학과
+  year?: string;     // 학번 두 자리
+  junior: string;    // 내 이름
+  menu: string;      // 먹은 메뉴
+  price?: number;    // 없으면 영수증에 '비공개'
+  place?: string;    // 장소
+  date: string;      // YYYY-MM-DD
+  note?: string;     // 한마디, 속보 인터뷰로 들어감
+  level: 1 | 2 | 3;  // 주접 레벨
+};</code></pre>
+
+  <h3>확인할 것</h3>
+  <ul class="checks">
+    <li>아이폰과 안드로이드의 인스타 인앱 브라우저, 카톡 인앱 브라우저에서 직접 열어 보기</li>
+    <li>'아니요' 도망: 마우스는 올리기만 해도, 터치는 누르는 순간 이동하는지</li>
+    <li>한글 웹폰트가 늦게 와도 레이아웃이 안 무너지는지, 첫 화면이 2초 안에 뜨는지</li>
+    <li>긴 이름·긴 메뉴("엽기떡볶이 오리지널 착한맛 + 주먹밥")에서 줄바꿈</li>
+    <li>조사 자동 처리 (마라탕을 / 꿔바로우를, 새내가 / 민준이가). 시안에는 이미 넣어 둠</li>
+    <li>링크 스티커 문구 변경과 눌렀을 때 바로 열리는지</li>
+  </ul>
+</section>
+
+<section class="wrap" id="guard" aria-labelledby="guard-h">
+  <h2 id="guard-h">선 넘지 않기</h2>
+  <ul class="checks">
+    <li>실명, 학과, 학번 조합은 내 스토리를 보는 모두에게 공개됩니다. 선배에게 미리 물어보거나 이름만, 아니면 '김OO'로 씁니다.</li>
+    <li>금액은 기본 비공개. 공개하면 선배가 허세나 짠돌이처럼 보일 수 있고, 다른 후배들에게 기준이 생깁니다.</li>
+    <li>다른 선배와 비교하는 드립은 금지 (밥약 꼴불견 8위). 외모·연애 드립도 빼는 게 안전합니다.</li>
+    <li>학교 공식 로고와 교표는 쓰지 않습니다. 크림슨 색과 호랑이 분위기 정도만.</li>
+    <li>가짜 신문은 이름부터 패러디(밥약일보)로. 실제 언론사 이름이나 로고는 쓰지 않습니다.</li>
+  </ul>
+</section>
+
+<section class="wrap" id="decide" aria-labelledby="decide-h">
+  <h2 id="decide-h">정할 것</h2>
+  <ol class="decide">
+    <li><b>나만 쓸까, 다른 고대생에게도 열까?</b> 열면 2단계(짧은 링크, DB)가 필요합니다.</li>
+    <li><b>음식 사진을 넣을까?</b> 넣으면 2단계부터, 빼면 1단계로 바로 만들 수 있습니다.</li>
+    <li><b>이름.</b> 은혜 갚는 호랑이(가제), 밥약일보, 선배님 헌정관 중에서.</li>
+    <li><b>6장면 중 빼거나 바꿀 장면.</b> 상장을 빼고 '선배 능력치 카드'를 넣는 식의 교체도 가능합니다.</li>
+  </ol>
+</section>
+
+<footer class="wrap sources" aria-labelledby="src-h">
+  <section>
+    <h2 id="src-h">출처</h2>
+    <ol>
+      <li><a href="https://orbi.kr/00015666687" target="_blank" rel="noopener">오르비, [칼럼to.새내기] 4. 밥약과 학교생활</a></li>
+      <li><a href="https://biz.korea.ac.kr/news/media_view.html?no=305" target="_blank" rel="noopener">고려대 경영대학 미디어 (아시아타임즈 2018.12.17, 학생홍보대사 인터뷰)</a></li>
+      <li><a href="https://www.univ20.com/Twenties/Detail/3841" target="_blank" rel="noopener">대학내일, 성공률 100% 신입생 밥약 가이드 (2026.01.27)</a></li>
+      <li><a href="https://digitalchosun.dizzo.com/site/data/html_dir/2016/06/16/2016061611707.html" target="_blank" rel="noopener">디지틀조선, 잡코리아·알바몬 밥약 설문</a></li>
+      <li><a href="https://v.daum.net/v/2JdQ76tssh" target="_blank" rel="noopener">KBS, "선배 밥 사주세요"…요즘 대학생 '후배 무섭다' 한숨 사연은 (2025.07.02)</a></li>
+      <li><a href="https://www.instiz.net/name/62301601" target="_blank" rel="noopener">인스티즈, 대학 선배랑 밥약하고 스토리 올릴때</a></li>
+      <li><a href="https://www.careet.net/1909" target="_blank" rel="noopener">캐릿, 바이브 코딩 언제까지 미루실 건가요?</a></li>
+      <li><a href="https://www.careet.net/882" target="_blank" rel="noopener">캐릿, 주접 댓글 미션 (2022.09.16)</a></li>
+      <li><a href="https://www.producthunt.com/products/valentine-message-generator" target="_blank" rel="noopener">Product Hunt, Valentine Message Generator</a></li>
+      <li><a href="https://www.avclub.com/gaze-deeply-into-this-loving-tribute-to-the-heyday-of-g-1798283375" target="_blank" rel="noopener">AV Club, Cameron's World</a></li>
+      <li><a href="https://www.vice.com/en/article/neocities-is-recreating-the-garish-web-10-creativity-of-geocities" target="_blank" rel="noopener">VICE, Neocities</a></li>
+    </ol>
+    <p class="fine">기획 단계 시안입니다. 김호랑, 이새내는 가상의 인물입니다.</p>
+  </section>
+</footer>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="한 폰으로 넘겨보기">
+  <div class="v-top"><p id="v-count">1 / 6</p><button type="button" class="v-close" id="v-close">닫기</button></div>
+  <div class="v-stage">
+    <button type="button" class="v-nav" id="v-prev" aria-label="이전 장면">‹</button>
+    <div class="v-phone" id="v-phone"><div class="phone"><div class="screen" id="v-screen" data-i="0" data-ctx="v"></div></div></div>
+    <button type="button" class="v-nav" id="v-next" aria-label="다음 장면">›</button>
+  </div>
+  <p class="v-help">화면 오른쪽을 누르면 다음, 왼쪽을 누르면 이전 장면</p>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  const EXAMPLE = {
+    senior: '김호랑', junior: '이새내', major: '경영학과', year: '22',
+    menu: '마라탕이랑 꿔바로우', place: '참살이길', date: '2026-11-10',
+    price: '38000', showPrice: false,
+    note: '선배님 덕분에 배도 마음도 꽉 찼습니다', level: 2, coupon: '아아 한 잔'
+  };
+  let S = { ...EXAMPLE };
+  const OPTIONS = ['아아 한 잔', '달달한 라떼', '케이크 한 조각', '후식 풀코스'];
+  const NO_LINES = ['아니요', '진짜요?', '다시 생각해 보세요', '선배님 그럴 분 아니잖아요', '버튼이 고장났어요', '…네?'];
+  const WD = '일월화수목금토';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const pad = n => String(n).padStart(2, '0');
+
+  // 받침에 맞는 조사 고르기. 한글이 아니면 '을(를)'처럼 둘 다 표기
+  function josa(word, pair) {
+    const [a, b] = pair.split('/');
+    const w = String(word).trim();
+    const c = w.charCodeAt(w.length - 1);
+    if (!w || c < 0xAC00 || c > 0xD7A3) return `${a}(${b})`;
+    const jong = (c - 0xAC00) % 28;
+    if (pair === '으로/로') return (jong === 0 || jong === 8) ? b : a;
+    return jong ? a : b;
+  }
+  function parseDate(str) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || '');
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(2026, 10, 10);
+  }
+  const FOOD = [[/마라|훠궈/, '🌶️'], [/국밥|탕|찌개|전골/, '🍲'], [/삼겹|고기|갈비|족발|보쌈/, '🥩'], [/치킨|닭/, '🍗'], [/피자/, '🍕'], [/버거/, '🍔'], [/초밥|스시|회/, '🍣'], [/파스타|스파게티/, '🍝'], [/라멘|라면|우동|국수/, '🍜'], [/떡볶이|분식/, '🍢'], [/카레/, '🍛'], [/돈까스|돈가스|카츠/, '🍱'], [/샐러드|포케/, '🥗'], [/케이크|디저트|빙수/, '🍰']];
+  const pickFood = menu => (FOOD.find(([re]) => re.test(menu)) || [, '🍚'])[1];
+
+  // 주접 레벨별 문구 (0 = 예의 바름, 1 = 주접, 2 = 광기)
+  const L = {
+    warn: [
+      v => `안내: 본 페이지는 ${v.senior} 선배님께 감사 인사를 드리려고 만들었습니다. 끝까지 봐 주시면 영광이겠습니다.`,
+      v => `⚠ 경고: ${v.senior} 선배님의 아우라 때문에 화면 밝기가 자동으로 올라갈 수 있습니다.`,
+      v => `⚠ 경고 ⚠ ${v.senior} 선배님을 정면으로 보면 실명 위험이 있습니다. 반드시 선글라스를 끼고 입장하십시오.`
+    ],
+    enter: ['입장하기', '입장하기 ▶', '선글라스 끼고 입장 😎'],
+    tail: ['훈훈', '술렁', '정전 사태 (너무 빛나서)'],
+    index: ['12', '999', '∞'],
+    extra: [
+      () => '',
+      v => ` 한편 ${v.senior} 씨는 "편하게 먹어"라는 말만 남기고 유유히 현장을 떠났다.`,
+      () => ` 목격자들은 "카드를 꺼내는 순간 식당 전체에 후광이 비쳤다"고 입을 모았다.`
+    ],
+    award: ['은혜로운 선배상', '밥약계의 빛과 소금상', '인류애 회복 공로 대상'],
+    cert: [
+      v => `위 사람은 ${v.dateK} ${v.place}에서 후배에게 ${v.menu}${v.menuEul} 사 주며 따뜻한 조언까지 아끼지 않았기에 이 상장을 드립니다.`,
+      v => `위 사람은 ${v.dateK} ${v.place}에서 배고픈 후배에게 ${v.menu}${v.menuEul} 아낌없이 베풀어 후배의 위장과 마음을 동시에 채웠으므로 이 상장을 수여합니다.`,
+      v => `위 사람은 ${v.dateK} ${v.place}에서 굶주린 후배에게 ${v.menu}${v.menuEul} 하사하여 안암의 평화와 후배의 혈당을 함께 지켜냈으므로 그 공을 길이 기리고자 이 상장을 바칩니다.`
+    ],
+    total: ['꼭 갚겠습니다', '평생 갚을 예정', '다음 생까지 할부'],
+    q: ['다음에 또 같이 밥 먹어 주실 거죠?', '다음에 또 밥 사주실 거죠?', '다음 밥약, 이미 확정된 거 맞죠?']
+  };
+
+  function view(src = S) {
+    const t = k => String(src[k] ?? '').trim();
+    const raw = {
+      senior: t('senior') || '김OO', junior: t('junior') || '후배', major: t('major'),
+      year: t('year').replace(/[^0-9]/g, '').slice(0, 2), menu: t('menu') || '밥',
+      place: t('place') || '안암', note: t('note') || '정말 맛있었습니다'
+    };
+    const d = parseDate(src.date);
+    const y = d.getFullYear(), m = d.getMonth() + 1, dd = d.getDate();
+    const v = {};
+    for (const k in raw) v[k] = esc(raw[k]);
+    v.level = [1, 2, 3].includes(+src.level) ? +src.level : 2;
+    v.menuEul = josa(raw.menu, '을/를');
+    v.juniorGa = josa(raw.junior, '이/가');
+    v.majorYear = esc([raw.major, raw.year ? raw.year + '학번' : ''].filter(Boolean).join(' '));
+    v.yearTag = raw.year ? `${esc(raw.year)}학번 ` : '';
+    v.y = y;
+    v.dateK = `${m}월 ${dd}일`;
+    v.dateY = `${y}년 ${m}월 ${dd}일`;
+    v.dateDot = `${y}.${pad(m)}.${pad(dd)}`;
+    v.dateWd = `${v.dateDot}(${WD[d.getDay()]})`;
+    v.appr = `${raw.year || '26'}-${pad(m)}${pad(dd)}-0001`;
+    v.food = pickFood(raw.menu);
+    v.titleSize = Math.max(24, 42 - Math.max(0, raw.senior.length - 4) * 5);
+    const digits = String(src.price || '').replace(/[^0-9]/g, '');
+    v.price = (src.showPrice && digits) ? `${Number(digits).toLocaleString('ko-KR')}원` : '';
+    return v;
+  }
+
+  const SCENES = [
+    {
+      key: 'intro', name: '입장', light: false,
+      note: '워드아트와 방문자 카운터로 일부러 촌스럽게. 첫 3초 웃음 담당.',
+      html: v => {
+        const lv = v.level - 1;
+        const m = `★ ${v.senior} 선배님 밥약 감사합니다 ★ ${v.dateDot} ${v.place} ★ 이 은혜 잊지 않겠습니다 `;
+        return `<div class="marq" aria-hidden="true"><div class="marq-track"><span>${m}</span><span>${m}</span></div></div>
+          <div class="sparkles" aria-hidden="true"><i style="left:8%;top:17%">✦</i><i style="left:86%;top:22%">✦</i><i style="left:12%;top:50%">✧</i><i style="left:88%;top:56%">✦</i><i style="left:48%;top:82%">✧</i></div>
+          <p class="wordart" style="font-size:${v.titleSize}px">${v.senior}<br>선배님</p>
+          <p class="tag-yellow">공식 헌정관</p>
+          <p class="warn">${L.warn[lv](v)}</p>
+          <button type="button" class="btn95" data-act="enter">${L.enter[lv]}</button>
+          <div class="intro-foot"><div class="counter"><span>방문자 수</span><b>0</b><b>0</b><b>0</b><b>1</b><b>2</b><b>8</b></div><p>Best viewed in 인스타 인앱 브라우저<br>since ${v.dateDot}</p></div>`;
+      }
+    },
+    {
+      key: 'news', name: '속보', light: true,
+      note: '밥약일보 1면. 내가 쓴 한마디가 후배 인터뷰로 들어갑니다.',
+      html: v => {
+        const lv = v.level - 1;
+        const body = `${v.dateK} ${v.place}의 한 식당에서 ${v.majorYear ? v.majorYear + ' ' : ''}${v.senior} 씨가 후배에게 ${v.menu}${v.menuEul} 사 준 사실이 확인됐다. 현장에 있던 후배 ${v.junior} 씨는 "${v.note}"라며 감격을 감추지 못했다.${L.extra[lv](v)}`;
+        return `<header class="np-head"><span class="np-side">안암판</span><p class="np-name">밥약일보</p><span class="np-side">제1호</span></header>
+          <p class="np-meta"><span>${v.dateWd}</span><span>은혜지수 ▲${L.index[lv]}</span></p>
+          <p class="np-hl"><span class="np-flag">속보</span> ${v.yearTag}${v.senior}, 후배에게 ${v.menu} 사줘… ${v.place} 일대 ${L.tail[lv]}</p>
+          <div class="np-photo" aria-hidden="true"><span>${v.food}</span></div>
+          <p class="np-cap">▲ 사건 현장. ${v.menu}의 생전 모습 (사진=후배 폰)</p>
+          <p class="np-body">${body}</p>
+          <p class="np-by">${v.junior} 기자 (본인)</p>
+          <div class="np-rank"><b>많이 본 뉴스</b><ol><li>${v.senior} 선배 "메뉴 골라" 한마디에 후배 감동</li><li>"편하게 먹어" 올해의 명대사 1위</li><li>안암 새내기들 "저도 사주세요" 문의 폭주</li></ol></div>`;
+      }
+    },
+    {
+      key: 'receipt', name: '은혜 영수증', light: false,
+      note: '먹은 메뉴와 값을 매길 수 없는 것들. 금액은 기본 비공개.',
+      html: v => {
+        const lv = v.level - 1;
+        const foot = v.price ? '* 은혜는 환불·반품이 불가합니다' : '* 선배님이 겸손하셔서 금액은 비공개<br>* 은혜는 환불·반품이 불가합니다';
+        return `<div class="rc-wrap"><div class="receipt">
+            <p class="rc-title">은혜 영수증</p><p class="rc-en">RECEIPT OF 恩惠</p>
+            <p class="rc-meta">밥약 은혜상회 ${v.place}점<br>${v.dateDot} · 담당 ${v.junior}</p>
+            <div class="rc-rule"></div>
+            <div class="rc-row"><span>${v.menu}</span><span>${v.price || '비공개*'}</span></div>
+            <div class="rc-row"><span>인생 조언 3건</span><span>측정 불가</span></div>
+            <div class="rc-row"><span>"편하게 먹어" 1회</span><span>∞</span></div>
+            <div class="rc-row"><span>선배님의 미소</span><span>priceless</span></div>
+            ${lv === 2 ? '<div class="rc-row"><span>선배님 존재 자체</span><span>국가 예산급</span></div>' : ''}
+            <div class="rc-rule"></div>
+            <div class="rc-row rc-total"><span>합계</span><span>${L.total[lv]}</span></div>
+            <div class="rc-row"><span>할부</span><span>무이자 평생</span></div>
+            <div class="rc-row"><span>승인번호</span><span>${v.appr}</span></div>
+            <div class="rc-bar" aria-hidden="true"></div>
+            <p class="rc-foot">${foot}</p>
+            <p class="rc-sign">서명<span>${v.junior}</span></p>
+          </div></div>
+          <p class="rc-note">↑ 평생 소장용</p>`;
+      }
+    },
+    {
+      key: 'cert', name: '상장', light: true,
+      note: '주접 레벨에 따라 상 이름이 바뀝니다. 리그램하기 좋은 장면.',
+      html: v => {
+        const lv = v.level - 1;
+        return `<div class="cert">
+            <p class="ct-no">제 ${v.y}-001 호</p>
+            <p class="ct-title">상장</p>
+            <p class="ct-award">${L.award[lv]}</p>
+            <p class="ct-who"><span>${v.majorYear}</span><b>${v.senior}</b></p>
+            <p class="ct-body">${L.cert[lv](v)}</p>
+            <p class="ct-date">${v.dateY}</p>
+            <div class="ct-from"><p>밥약 진흥위원회<br>위원장 <b>${v.junior}</b></p><span class="seal" aria-label="은혜 인증 도장"><i>은</i><i>혜</i><i>인</i><i>증</i></span></div>
+          </div>`;
+      }
+    },
+    {
+      key: 'question', name: '또 사주실 거죠?', light: false,
+      note: "'아니요'가 도망가는 고백 사이트 공식. 직접 눌러 보세요.",
+      html: v => `<p class="q-emoji" aria-hidden="true">🥺</p>
+          <p class="q-to">${v.senior} 선배님…</p>
+          <p class="q-text">${L.q[v.level - 1]}</p>
+          <div class="arena" data-n="0">
+            <button type="button" class="btn-yes" data-act="yes">네!</button>
+            <button type="button" class="btn-no">아니요</button>
+          </div>
+          <p class="q-hint" hidden>* '아니요' 버튼은 현재 점검 중입니다</p>
+          <div class="agree" hidden>
+            <p class="agree-stamp">녹음 완료</p>
+            <p class="agree-sub">법적 효력이 발생했습니다.<br>다음 밥약: 선배님 편하신 날</p>
+            <button type="button" class="agree-retry" data-act="retry">다시 해보기</button>
+          </div>
+          <div class="confetti" aria-hidden="true"></div>`
+    },
+    {
+      key: 'coupon', name: '보은권', light: true,
+      note: '2밥약 1보은. 선배가 고른 화면을 캡처해 DM하면 교환.',
+      html: (v, ctx) => `<p class="cp-top">2밥약 1보은 규정에 따라 발행합니다</p>
+          <div class="cp-wrap"><div class="ticket">
+            <div class="tk-head"><p>報恩券</p><span>보은권 No.${v.appr}</span></div>
+            <div class="tk-body">
+              <p class="tk-to">${v.senior} 선배님 전용</p>
+              <p class="tk-desc">하나 고르시면 ${v.junior}${v.juniorGa} 갚으러 갑니다</p>
+              <div class="chips" role="radiogroup" aria-label="보은 메뉴">${OPTIONS.map((o, k) => `<input type="radio" id="cp-${ctx}-${k}" name="cp-${ctx}" value="${o}"${S.coupon === o ? ' checked' : ''}><label for="cp-${ctx}-${k}">${o}</label>`).join('')}</div>
+              <p class="tk-result">${S.coupon ? `접수 완료! 이 화면 캡처해서 ${v.junior}에게 DM 주세요` : '↑ 하나 골라 주세요'}</p>
+            </div>
+            <div class="tk-foot"><span>유효기간: 선배님 졸업할 때까지 (자동 연장)</span><span>발행인 ${v.junior} (인)</span></div>
+          </div></div>
+          <div class="cp-bottom"><span class="cp-make">나도 선배님 헌정관 만들기 →<em>2단계</em></span><span class="cp-count">방문자 000129</span></div>`
+    }
+  ];
+
+  const bars = i => `<div class="bars" aria-hidden="true">${SCENES.map((_, k) => `<i class="${k < i ? 'done' : k === i ? 'on' : ''}"></i>`).join('')}</div>`;
+
+  function renderScreen(scr) {
+    const i = +scr.dataset.i, sc = SCENES[i];
+    scr.className = `screen s-${sc.key}${sc.light ? ' light' : ''}`;
+    scr.innerHTML = bars(i) + sc.html(view(), scr.dataset.ctx);
+  }
+  const renderAll = () => $$('.screen').forEach(renderScreen);
+  const rerender = i => $$(`.screen[data-i="${i}"]`).forEach(renderScreen);
+
+  // 시안 그리드 만들기
+  $('#shots').innerHTML = SCENES.map((sc, i) => `<figure class="shot" id="shot-${i}">
+      <div class="phone"><div class="screen" data-i="${i}" data-ctx="g"></div></div>
+      <figcaption><span class="sc-no">${i + 1}</span><span><b>${sc.name}</b>${sc.note}</span></figcaption>
+    </figure>`).join('');
+
+  // 주접 레벨 비교표 (예시값 기준)
+  (() => {
+    const rows = [
+      ['입장 경고문', lv => L.warn[lv]],
+      ['속보 헤드라인 끝', lv => v => `…${v.place} 일대 ${L.tail[lv]}`],
+      ['상장 이름', lv => () => L.award[lv]],
+      ['영수증 합계', lv => () => L.total[lv]],
+      ['5번 질문', lv => () => L.q[lv]]
+    ];
+    const v = view(EXAMPLE);
+    $('#lv-body').innerHTML = rows.map(([name, f]) => `<tr><td>${name}</td>${[0, 1, 2].map(lv => `<td>${f(lv)(v)}</td>`).join('')}</tr>`).join('');
+  })();
+
+  // 입력칸
+  const FIELDS = ['senior', 'junior', 'major', 'year', 'menu', 'place', 'date', 'price', 'note'];
+  function fillForm() {
+    FIELDS.forEach(k => { $('#f-' + k).value = S[k]; });
+    $('#f-showprice').checked = S.showPrice;
+    $('#f-level-' + S.level).checked = true;
+  }
+  function readForm() {
+    FIELDS.forEach(k => { S[k] = $('#f-' + k).value; });
+    S.showPrice = $('#f-showprice').checked;
+    S.level = +(($('input[name="level"]:checked') || {}).value || 2);
+  }
+  const editor = $('#editor');
+  editor.addEventListener('input', () => { readForm(); renderAll(); });
+  editor.addEventListener('change', () => { readForm(); renderAll(); });
+  editor.addEventListener('submit', e => e.preventDefault());
+  $('#reset').addEventListener('click', () => { S = { ...EXAMPLE }; fillForm(); renderAll(); });
+
+  // '아니요' 도망
+  function dodge(no) {
+    const now = Date.now();
+    if (now - (+no.dataset.t || 0) < 280) return;
+    no.dataset.t = now;
+    const arena = no.parentElement, yes = arena.querySelector('.btn-yes');
+    const n = (+arena.dataset.n || 0) + 1;
+    arena.dataset.n = n;
+    no.textContent = NO_LINES[Math.min(n, NO_LINES.length - 1)];
+    const g = Math.min(1 + n * 0.14, 1.9);
+    yes.style.setProperty('--grow', g);
+    const aw = arena.clientWidth, ah = arena.clientHeight, bw = no.offsetWidth, bh = no.offsetHeight;
+    const cx = yes.offsetLeft + yes.offsetWidth / 2, cy = yes.offsetTop + yes.offsetHeight / 2;
+    const hw = yes.offsetWidth * g / 2 + 8, hh = yes.offsetHeight * g / 2 + 8;
+    const ox = no.offsetLeft, oy = no.offsetTop;
+    let x = 0, y = 0;
+    for (let k = 0; k < 40; k++) {
+      x = Math.random() * Math.max(0, aw - bw);
+      y = Math.random() * Math.max(0, ah - bh);
+      const hitsYes = x < cx + hw && x + bw > cx - hw && y < cy + hh && y + bh > cy - hh;
+      const tooClose = Math.hypot(x - ox, y - oy) < 60;
+      if (!hitsYes && !tooClose) break;
+    }
+    no.style.left = x + 'px';
+    no.style.top = y + 'px';
+    const hint = arena.parentElement.querySelector('.q-hint');
+    if (hint && n >= 2) hint.hidden = false;
+  }
+
+  function confetti(box) {
+    if (reduce || !box) return;
+    const colors = ['var(--m-yellow)', 'var(--m-white)', 'var(--m-crimson)', 'var(--m-violet)', 'var(--m-ink)'];
+    let h = '';
+    for (let k = 0; k < 34; k++) {
+      h += `<i style="left:${(Math.random() * 100).toFixed(1)}%;background:${colors[k % colors.length]};animation-duration:${(1.4 + Math.random() * 1.2).toFixed(2)}s;animation-delay:${(Math.random() * 0.3).toFixed(2)}s"></i>`;
+    }
+    box.innerHTML = h;
+    setTimeout(() => { box.innerHTML = ''; }, 3000);
+  }
+
+  // 한 폰으로 넘겨보기
+  const viewer = $('#viewer'), vScreen = $('#v-screen');
+  let vi = 0, opener = null, advT = 0;
+  function fit() {
+    const navW = window.innerWidth > 600 ? 140 : 0;
+    const k = Math.max(0.5, Math.min((window.innerWidth - 32 - navW) / 294, (window.innerHeight - 150) / 594, 1.3));
+    const box = $('#v-phone');
+    box.style.width = 294 * k + 'px';
+    box.style.height = 594 * k + 'px';
+    box.firstElementChild.style.transform = `scale(${k})`;
+  }
+  function renderViewer() {
+    vScreen.dataset.i = vi;
+    renderScreen(vScreen);
+    $('#v-count').textContent = `${vi + 1} / ${SCENES.length} · ${SCENES[vi].name}`;
+    $('#v-prev').disabled = vi === 0;
+    $('#v-next').disabled = vi === SCENES.length - 1;
+  }
+  function go(i) {
+    clearTimeout(advT);
+    vi = Math.max(0, Math.min(SCENES.length - 1, i));
+    renderViewer();
+  }
+  function openViewer() {
+    opener = document.activeElement;
+    vi = 0;
+    viewer.hidden = false;
+    document.body.classList.add('noscroll');
+    fit();
+    renderViewer();
+    $('#v-close').focus();
+  }
+  function closeViewer() {
+    clearTimeout(advT);
+    viewer.hidden = true;
+    document.body.classList.remove('noscroll');
+    if (opener && opener.focus) opener.focus();
+  }
+  $('#v-close').addEventListener('click', closeViewer);
+  $('#v-prev').addEventListener('click', () => go(vi - 1));
+  $('#v-next').addEventListener('click', () => go(vi + 1));
+  vScreen.addEventListener('click', e => {
+    if (e.target.closest('button, label, input, a, .arena')) return;
+    const r = vScreen.getBoundingClientRect();
+    go(e.clientX - r.left < r.width * 0.35 ? vi - 1 : vi + 1);
+  });
+  window.addEventListener('resize', () => { if (!viewer.hidden) fit(); });
+  document.addEventListener('keydown', e => {
+    if (viewer.hidden) return;
+    if (e.key === 'Escape') closeViewer();
+    else if (e.key === 'ArrowRight') go(vi + 1);
+    else if (e.key === 'ArrowLeft') go(vi - 1);
+  });
+
+  function jumpTo(i) {
+    const el = document.getElementById('shot-' + i);
+    if (!el) return;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+
+  let toastT = 0;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { t.hidden = true; }, 1800);
+  }
+  function selectText(p) {
+    const r = document.createRange();
+    r.selectNodeContents(p);
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+    toast('선택해 뒀어요. 길게 눌러 복사하세요');
+  }
+
+  // 화면 속 버튼들 (그리드와 넘겨보기 공용)
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const no = t.closest('.btn-no');
+    if (no) { e.preventDefault(); dodge(no); return; }
+    if (t.closest('.open-viewer')) { openViewer(); return; }
+    const cp = t.closest('.copy');
+    if (cp) {
+      const p = cp.parentElement.querySelector('p');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(p.textContent).then(() => toast('복사했어요')).catch(() => selectText(p));
+      } else selectText(p);
+      return;
+    }
+    const act = t.closest('[data-act]');
+    if (!act) return;
+    const scr = act.closest('.screen');
+    const a = act.dataset.act;
+    if (a === 'enter') { scr.dataset.ctx === 'v' ? go(1) : jumpTo(1); }
+    else if (a === 'yes') {
+      const box = scr.querySelector('.agree');
+      if (box) box.hidden = false;
+      confetti(scr.querySelector('.confetti'));
+      if (scr.dataset.ctx === 'v') {
+        clearTimeout(advT);
+        advT = setTimeout(() => { if (!viewer.hidden && vi === 4) go(5); }, 1900);
+      }
+    } else if (a === 'retry') renderScreen(scr);
+  });
+  document.addEventListener('pointerdown', e => {
+    const no = e.target.closest('.btn-no');
+    if (no && e.pointerType !== 'mouse') { e.preventDefault(); dodge(no); }
+  });
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType !== 'mouse') return;
+    const no = e.target.closest('.btn-no');
+    if (no) dodge(no);
+  });
+  document.addEventListener('change', e => {
+    if (e.target.matches('.chips input')) { S.coupon = e.target.value; rerender(5); }
+  });
+
+  fillForm();
+  renderAll();
+})();
+</script>

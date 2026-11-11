@@ -1,0 +1,845 @@
+/* 헌정관 장면 스타일. 장면은 280×580 설계 크기 기준이고, 실제 화면에서는 무대(.stage)째로 확대한다.
+   제품 자체의 룩이라 라이트/다크 테마와 상관없이 색을 고정한다. */
+:root {
+  --m-crimson: #9e1530;
+  --m-ink: #141011;
+  --m-ink-2: #5b524c;
+  --m-paper: #f4efe3;
+  --m-photo: #d8cfbd;
+  --m-rule: #e6e0d0;
+  --m-yellow: #ffe600;
+  --m-pink: #ff4fa0;
+  --m-pink-a: rgba(255, 79, 160, 0.95);
+  --m-violet: #7b2bff;
+  --m-night: #0b0a3b;
+  --m-night-deep: #07062a;
+  --m-lav: #bdbdff;
+  --m-gold: #b88a1b;
+  --m-gold-a: rgba(184, 138, 27, 0.09);
+  --m-cert: #fbf7ec;
+  --m-cert-bg: #e9e0cb;
+  --m-seal: #d7261e;
+  --m-white: #ffffff;
+  --m-white-a: rgba(255, 255, 255, 0.65);
+  --m-receipt: #fffef7;
+  --m-black: #000000;
+  --m-grey: #c3c3c3;
+  --m-grey-dk: #3a3a3a;
+  --m-led: #39ff14;
+  --m-led-bd: #555555;
+  --m-frame: #121012;
+  --m-dim: rgba(0, 0, 0, 0.08);
+  --m-shade: rgba(0, 0, 0, 0.4);
+
+  --f-body: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+  --f-display: 'Black Han Sans', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --f-serif: 'Nanum Myeongjo', 'AppleMyungjo', 'Noto Serif KR', 'Batang', serif;
+  --f-hand: 'Gaegu', 'Comic Sans MS', cursive;
+  --f-mono: 'Nanum Gothic Coding', ui-monospace, Menlo, monospace;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- 헌정관 페이지 무대 ---------- */
+.t-body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--m-night-deep);
+  font-family: var(--f-body);
+  word-break: keep-all;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+html.js,
+html.js .t-body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html.js .stage {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+html.js .stage.framed {
+  border-radius: 26px;
+  box-shadow: 0 30px 60px -20px var(--m-shade);
+}
+html.js .stage > .screen {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  display: none;
+}
+html.js .stage > .screen.is-on {
+  display: flex;
+  animation: scene-in 0.22s ease-out;
+}
+@keyframes scene-in {
+  from {
+    opacity: 0.4;
+    transform: scale(0.985);
+  }
+}
+/* 스크립트가 안 돌면 장면을 세로로 쌓아서 보여 준다 */
+html:not(.js) .stage {
+  display: grid;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ---------- 장면 공통 ---------- */
+.screen {
+  position: relative;
+  width: 280px;
+  height: 580px;
+  border-radius: 29px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 16px 16px;
+  box-sizing: border-box;
+  font-family: var(--f-body);
+  color: var(--m-ink);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  --bb: rgba(255, 255, 255, 0.38);
+  --bf: var(--m-white);
+}
+.screen *,
+.screen *::before,
+.screen *::after {
+  box-sizing: border-box;
+}
+.screen.light {
+  --bb: rgba(0, 0, 0, 0.14);
+  --bf: var(--m-ink);
+}
+.screen p {
+  margin: 0;
+}
+.screen button {
+  font-family: var(--f-body);
+  -webkit-tap-highlight-color: transparent;
+}
+.screen :focus-visible {
+  outline: 2px solid var(--m-crimson);
+  outline-offset: 2px;
+}
+.bars {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+.bars i {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--bb);
+}
+.bars i.done,
+.bars i.on {
+  background: var(--bf);
+}
+
+/* 1 입장 */
+.s-intro {
+  background-color: var(--m-night);
+  background-image: radial-gradient(circle, var(--m-white) 0 1px, transparent 1.5px), radial-gradient(circle, var(--m-yellow) 0 1px, transparent 1.5px);
+  background-size: 36px 36px, 58px 58px;
+  background-position: 0 0, 17px 23px;
+  color: var(--m-white);
+  text-align: center;
+  align-items: center;
+  gap: 12px;
+}
+.marq {
+  align-self: stretch;
+  margin: 0 -16px;
+  background: var(--m-crimson);
+  color: var(--m-yellow);
+  font: 700 12px/1 var(--f-body);
+  padding: 7px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marq-track {
+  display: inline-flex;
+  animation: marq 16s linear infinite;
+}
+.marq-track span {
+  padding-right: 28px;
+}
+@keyframes marq {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.sparkles i {
+  position: absolute;
+  font-style: normal;
+  font-size: 15px;
+  color: var(--m-yellow);
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+.sparkles i:nth-child(2n) {
+  animation-delay: 0.5s;
+  color: var(--m-white);
+}
+.sparkles i:nth-child(3n) {
+  animation-delay: 1s;
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+}
+.screen .wordart {
+  margin-top: 10px;
+  font: 400 42px/1.08 var(--f-display);
+  background: linear-gradient(180deg, var(--m-white) 8%, var(--m-yellow) 38%, var(--m-pink) 70%, var(--m-violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--m-black);
+  filter: drop-shadow(3px 4px 0 var(--m-black));
+  transform: skewY(-5deg) rotate(-2deg);
+  max-width: 100%;
+}
+.tag-yellow {
+  background: var(--m-yellow);
+  color: var(--m-night);
+  font: 700 14px/1 var(--f-body);
+  padding: 6px 12px;
+  transform: rotate(-3deg);
+  box-shadow: 3px 3px 0 var(--m-pink);
+}
+.warn {
+  background: var(--m-yellow);
+  color: var(--m-ink);
+  font: 700 12.5px/1.55 var(--f-body);
+  padding: 9px 11px;
+  text-align: left;
+  border: 6px solid transparent;
+  border-image: repeating-linear-gradient(45deg, var(--m-ink) 0 7px, var(--m-yellow) 7px 14px) 6;
+}
+.screen .btn95 {
+  background: var(--m-grey);
+  color: var(--m-black);
+  font: 700 14px/1.2 var(--f-body);
+  padding: 9px 18px;
+  border: 2px solid;
+  border-color: var(--m-white) var(--m-grey-dk) var(--m-grey-dk) var(--m-white);
+  box-shadow: 1px 1px 0 var(--m-black);
+  cursor: pointer;
+}
+.screen .btn95:active {
+  border-color: var(--m-grey-dk) var(--m-white) var(--m-white) var(--m-grey-dk);
+}
+.intro-foot {
+  margin-top: auto;
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+}
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10.5px;
+  color: var(--m-white);
+}
+.counter span {
+  margin-right: 6px;
+}
+.counter b {
+  width: 15px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  background: var(--m-black);
+  color: var(--m-led);
+  font: 700 13px/1 var(--f-mono);
+  border: 1px solid var(--m-led-bd);
+}
+.screen .intro-foot p {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--m-lav);
+}
+
+/* 2 속보 */
+.s-news {
+  background: var(--m-paper);
+  font-family: var(--f-serif);
+  gap: 7px;
+  padding-top: 26px;
+}
+.np-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 3px double var(--m-ink);
+  padding-bottom: 4px;
+}
+.np-name {
+  font: 800 30px/1 var(--f-serif);
+  letter-spacing: -0.04em;
+}
+.np-side {
+  font: 700 9.5px/1.2 var(--f-body);
+  border: 1px solid var(--m-ink);
+  padding: 2px 4px;
+  margin-bottom: 3px;
+}
+.np-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font: 500 9.5px/1.3 var(--f-body);
+  color: var(--m-ink-2);
+}
+.np-hl {
+  font: 800 17px/1.32 var(--f-serif);
+  letter-spacing: -0.03em;
+}
+.np-flag {
+  display: inline-block;
+  background: var(--m-seal);
+  color: var(--m-white);
+  font: 700 11px/1 var(--f-body);
+  padding: 4px 5px 3px;
+  vertical-align: 2px;
+}
+.np-photo {
+  flex: none;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background-color: var(--m-photo);
+  background-image: radial-gradient(circle, rgba(20, 16, 17, 0.3) 0 1px, transparent 1.4px);
+  background-size: 4px 4px;
+  border: 1px solid var(--m-ink);
+}
+.np-photo.has-img {
+  height: 132px;
+  background: var(--m-ink);
+}
+.np-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.05) saturate(0.92);
+}
+.np-photo span {
+  font-size: 56px;
+  line-height: 1;
+  filter: grayscale(1) contrast(1.2);
+}
+.screen .np-cap {
+  margin-top: -3px;
+  font: 500 9.5px/1.4 var(--f-body);
+  color: var(--m-ink-2);
+}
+.np-body {
+  font: 400 11.5px/1.62 var(--f-serif);
+  text-align: justify;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.screen .np-by {
+  margin-top: -4px;
+  font: 700 9.5px/1.2 var(--f-body);
+  text-align: right;
+}
+.np-rank {
+  margin-top: auto;
+  border-top: 1.5px solid var(--m-ink);
+  padding-top: 6px;
+  font-family: var(--f-body);
+}
+.np-rank b {
+  font-size: 10.5px;
+}
+.np-rank ol {
+  margin: 3px 0 0;
+  padding-left: 16px;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.np-rank li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 3 영수증 */
+.s-receipt {
+  background-color: var(--m-crimson);
+  background-image: repeating-linear-gradient(135deg, var(--m-dim) 0 2px, transparent 2px 9px);
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.rc-wrap {
+  filter: drop-shadow(0 10px 14px var(--m-shade));
+  transform: rotate(-1.6deg);
+}
+.receipt {
+  --z: 7px;
+  width: 236px;
+  background: var(--m-receipt);
+  color: var(--m-ink);
+  font: 400 10.5px/1.55 var(--f-mono);
+  padding: 16px 14px 26px;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--z)) 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--z)) 100%;
+}
+.rc-title {
+  text-align: center;
+  font: 700 17px/1.2 var(--f-body);
+  letter-spacing: 0.08em;
+}
+.screen .rc-en {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+.screen .rc-meta {
+  margin-top: 8px;
+  font-size: 9.5px;
+  text-align: center;
+}
+.rc-rule {
+  border-top: 1.5px dashed var(--m-ink);
+  margin: 8px 0;
+}
+.rc-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rc-row span:first-child {
+  min-width: 0;
+}
+.rc-row span:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+.rc-total {
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.rc-bar {
+  height: 30px;
+  margin: 10px 0 5px;
+  background: repeating-linear-gradient(90deg, var(--m-ink) 0 2px, transparent 2px 3px, var(--m-ink) 3px 4px, transparent 4px 7px, var(--m-ink) 7px 10px, transparent 10px 11px, var(--m-ink) 11px 12px, transparent 12px 15px);
+}
+.rc-foot {
+  font-size: 9px;
+  line-height: 1.5;
+}
+.screen .rc-sign {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 9.5px;
+}
+.rc-sign span {
+  font: 700 19px/1 var(--f-hand);
+  margin-left: 6px;
+}
+.rc-note {
+  font: 700 19px/1 var(--f-hand);
+  color: var(--m-yellow);
+  transform: rotate(-3deg);
+}
+
+/* 4 상장 */
+.s-cert {
+  background: var(--m-cert-bg);
+  padding: 26px 12px 12px;
+}
+.cert {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--m-cert);
+  border: 3px double var(--m-gold);
+  box-shadow: inset 0 0 0 5px var(--m-cert), inset 0 0 0 6px var(--m-gold);
+  padding: 20px 18px 16px;
+  font-family: var(--f-serif);
+  overflow: hidden;
+}
+.cert::before {
+  content: '恩';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 190px/1 var(--f-serif);
+  color: var(--m-gold-a);
+  pointer-events: none;
+}
+.ct-no {
+  font-size: 10px;
+}
+.screen .ct-title {
+  margin-top: 6px;
+  text-align: center;
+  font: 800 32px/1 var(--f-serif);
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+}
+.screen .ct-award {
+  margin-top: 2px;
+  text-align: center;
+  font: 800 13.5px/1.4 var(--f-serif);
+  color: var(--m-crimson);
+}
+.screen .ct-who {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 10.5px;
+}
+.ct-who b {
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  margin-right: -0.3em;
+}
+.screen .ct-body {
+  margin-top: 4px;
+  font: 400 12.5px/1.95 var(--f-serif);
+  text-align: justify;
+  position: relative;
+}
+.screen .ct-date {
+  margin-top: auto;
+  text-align: center;
+  font-size: 11.5px;
+}
+.ct-from {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+.ct-from p {
+  text-align: center;
+  font: 400 11.5px/1.5 var(--f-serif);
+}
+.ct-from b {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+.seal {
+  position: absolute;
+  right: 4px;
+  bottom: -6px;
+  width: 50px;
+  height: 50px;
+  border: 2.5px solid var(--m-seal);
+  border-radius: 7px;
+  color: var(--m-seal);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  font: 800 14px/1 var(--f-serif);
+  transform: rotate(-9deg);
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+}
+.seal i {
+  font-style: normal;
+}
+
+/* 5 또 사주실 거죠? */
+.s-question {
+  background-color: var(--m-pink);
+  background-image: radial-gradient(circle, var(--m-yellow) 0 3px, transparent 3.5px);
+  background-size: 24px 24px;
+  color: var(--m-white);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+}
+.q-emoji {
+  font-size: 52px;
+  line-height: 1;
+}
+.screen .q-to {
+  margin-top: 4px;
+  font: 700 14px/1.3 var(--f-body);
+  color: var(--m-ink);
+  background: var(--m-white);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.screen .q-text {
+  margin-top: 4px;
+  font: 400 25px/1.25 var(--f-display);
+  color: var(--m-white);
+  text-shadow: -2px -2px 0 var(--m-ink), 2px -2px 0 var(--m-ink), -2px 2px 0 var(--m-ink), 2px 2px 0 var(--m-ink), 4px 5px 0 var(--m-ink);
+}
+.arena {
+  position: relative;
+  flex: none;
+  width: 248px;
+  height: 200px;
+  margin-top: 4px;
+}
+.screen .btn-yes {
+  position: absolute;
+  left: 40px;
+  top: 66px;
+  z-index: 2;
+  font: 400 22px/1 var(--f-display);
+  background: var(--m-yellow);
+  color: var(--m-ink);
+  border: 3px solid var(--m-ink);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 4px 4px 0 var(--m-ink);
+  transform: scale(var(--grow, 1));
+  transition: transform 0.25s;
+  cursor: pointer;
+}
+.screen .btn-no {
+  position: absolute;
+  left: 156px;
+  top: 76px;
+  font: 700 14px/1 var(--f-body);
+  background: var(--m-white);
+  color: var(--m-ink);
+  border: 2px solid var(--m-ink);
+  border-radius: 10px;
+  padding: 10px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: none;
+  transition: left 0.18s, top 0.18s;
+}
+.q-hint {
+  font: 700 11px/1.3 var(--f-body);
+  color: var(--m-ink);
+  background: var(--m-yellow);
+  padding: 3px 8px;
+}
+.agree {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--m-pink-a);
+  color: var(--m-ink);
+}
+.agree-stamp {
+  font: 400 40px/1 var(--f-display);
+  color: var(--m-seal);
+  border: 5px solid var(--m-seal);
+  padding: 10px 16px;
+  background: var(--m-white-a);
+  transform: rotate(-8deg);
+  animation: stamp 0.35s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes stamp {
+  from {
+    transform: rotate(-8deg) scale(2.2);
+    opacity: 0;
+  }
+}
+.agree-sub {
+  font: 700 14px/1.6 var(--f-body);
+  text-align: center;
+}
+.screen .agree-retry {
+  font: 700 12px/1 var(--f-body);
+  background: transparent;
+  color: var(--m-ink);
+  border: 1.5px solid var(--m-ink);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti i {
+  position: absolute;
+  top: -14px;
+  width: 7px;
+  height: 11px;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to {
+    transform: translateY(1200px) rotate(540deg);
+  }
+}
+
+/* 6 보은권 */
+.s-coupon {
+  background-color: var(--m-yellow);
+  background-image: repeating-linear-gradient(-45deg, var(--m-dim) 0 10px, transparent 10px 20px);
+  gap: 12px;
+}
+.screen .cp-top {
+  margin-top: 4px;
+  text-align: center;
+  font: 700 19px/1.25 var(--f-hand);
+  transform: rotate(-2deg);
+}
+.cp-wrap {
+  filter: drop-shadow(4px 4px 0 var(--m-ink));
+}
+.ticket {
+  background: var(--m-white);
+  border-radius: 12px;
+  overflow: hidden;
+  -webkit-mask: radial-gradient(circle 10px at 0 46px, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 46px, #0000 98%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 10px at 0 46px, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 46px, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+.tk-head {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--m-crimson);
+  color: var(--m-white);
+}
+.tk-head p {
+  font: 800 22px/1 var(--f-serif);
+  letter-spacing: 0.1em;
+}
+.tk-head span {
+  font: 700 9.5px/1 var(--f-mono);
+  opacity: 0.85;
+}
+.tk-body {
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px 10px;
+}
+.tk-to {
+  font: 700 15px/1.3 var(--f-body);
+}
+.screen .tk-desc {
+  margin-top: -4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--m-ink-2);
+}
+.chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  border-top: 2px dashed var(--m-ink);
+  padding-top: 10px;
+}
+.chips input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.chips label {
+  font: 700 12px/1.2 var(--f-body);
+  text-align: center;
+  padding: 9px 4px;
+  border: 1.5px solid var(--m-ink);
+  border-radius: 8px;
+  background: var(--m-white);
+  cursor: pointer;
+}
+.chips input:checked + label {
+  background: var(--m-ink);
+  color: var(--m-yellow);
+}
+.chips input:focus-visible + label {
+  outline: 2px solid var(--m-crimson);
+  outline-offset: 2px;
+}
+.tk-result {
+  min-height: 2.6em;
+  font: 700 15px/1.3 var(--f-hand);
+  color: var(--m-crimson);
+}
+.tk-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 16px 12px;
+  font-size: 9.5px;
+  line-height: 1.4;
+  color: var(--m-ink-2);
+  border-top: 1px solid var(--m-rule);
+}
+.cp-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.screen .cp-restart {
+  font: 700 12.5px/1.2 var(--f-body);
+  color: var(--m-ink);
+  border: 2px dashed var(--m-ink);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--m-white-a);
+  cursor: pointer;
+}
+.cp-count {
+  font: 700 10px/1 var(--f-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marq-track,
+  .sparkles i,
+  .agree-stamp,
+  html.js .stage > .screen.is-on {
+    animation: none;
+  }
+  .screen .btn-yes,
+  .screen .btn-no {
+    transition: none;
+  }
+}
