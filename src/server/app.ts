@@ -9,7 +9,7 @@ import { checkBundle, contentType, FILE_NAME, fillPlaceholders, MAX_BUNDLE_BYTES
 import type { Config } from './config.ts';
 import { cleanMedia, MediaError } from './media.ts';
 import * as views from './pages.ts';
-import type { FileStore } from './store.ts';
+import { type FileStore, MAX_COUNT_STEP, REACTION_KEY } from './store.ts';
 
 // 링크 미리보기를 만드는 봇은 조회수와 반응에 넣지 않는다.
 const BOT_UA = /bot|crawl|spider|slurp|facebookexternalhit|kakaotalk-scrap|preview|headless|curl|wget/i;
@@ -152,6 +152,14 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
     return sendIndex(c, found.data.toString('utf8'), pageUrl(id), meta.views);
   });
 
+  // 함께 쌓는 숫자 (좋아요 등). 읽기는 누구나, 더하기는 봇만 빼고. 파일 경로보다 먼저 둔다.
+  app.get('/h/:id/counts', (c) => {
+    const meta = store.get(c.req.param('id'));
+    if (!meta) return c.notFound();
+    c.header('Cache-Control', 'no-store');
+    return c.json({ counts: meta.counts ?? {} });
+  });
+
   app.get('/h/:id/:file', (c) => {
     const { id, file } = c.req.param();
     if (file === 'index.html') return store.get(id) ? c.redirect(`/h/${id}/`, 308) : c.notFound();
@@ -175,6 +183,24 @@ export function createApp({ config, store, auth, assets }: AppDeps) {
     // 내가 열어 보거나 봇이 누른 건 남기지 않는다.
     if (!isAdmin(c) && !isBot(c)) store.recordReaction(id, key, value);
     return c.body(null, 204);
+  });
+
+  app.post('/h/:id/count', bodyLimit({ maxSize: 256, onError: (c) => c.text('too large', 413) }), async (c) => {
+    const id = c.req.param('id');
+    const meta = store.get(id);
+    if (!meta) return c.notFound();
+    let body: { key?: unknown; add?: unknown };
+    try {
+      body = (await c.req.json()) as typeof body;
+    } catch {
+      return c.json({ error: 'bad_request' }, 400);
+    }
+    const key = typeof body.key === 'string' ? body.key : '';
+    const add = typeof body.add === 'number' ? body.add : NaN;
+    if (!REACTION_KEY.test(key) || !Number.isInteger(add) || add < 1 || add > MAX_COUNT_STEP) return c.json({ error: 'bad_input' }, 400);
+    if (isBot(c)) return c.json({ total: meta.counts?.[key] ?? 0 });
+    const total = store.addCount(id, key, add);
+    return total === null ? c.json({ error: 'too_many_keys' }, 400) : c.json({ total });
   });
 
   // ---------- 개발 미리보기 (pnpm dev에서만) ----------

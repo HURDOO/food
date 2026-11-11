@@ -172,6 +172,22 @@ describe('food app', () => {
     assert.equal(reactions.no?.value, '3번 도망');
   });
 
+  test('shared counts add up across visitors, skip bots and refuse bad input', async () => {
+    const add = (body: unknown, headers: Record<string, string> = {}) =>
+      ctx.app.request(`/h/${id}/count`, { method: 'POST', headers: { 'content-type': 'application/json', 'user-agent': BROWSER, ...headers }, body: JSON.stringify(body) });
+    assert.deepEqual(await (await add({ key: 'like', add: 3 })).json(), { total: 3 });
+    assert.deepEqual(await (await add({ key: 'like', add: 5 })).json(), { total: 8 });
+    assert.deepEqual(await (await add({ key: 'like', add: 9 }, { 'user-agent': 'Googlebot' })).json(), { total: 8 });
+    for (const bad of [{ key: 'like', add: 0 }, { key: 'like', add: 1.5 }, { key: 'like', add: 501 }, { key: 'Bad Key', add: 1 }, { key: 'like', add: '2' }]) {
+      assert.equal((await add(bad)).status, 400, JSON.stringify(bad));
+    }
+    assert.equal((await add({ key: 'like', add: 1 }, { origin: 'https://evil.example' })).status, 403);
+    const read = await ctx.app.request(`/h/${id}/counts`);
+    assert.equal(read.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await read.json(), { counts: { like: 8 } });
+    assert.equal((await ctx.app.request('/h/AAAAAAAAAA/counts')).status, 404);
+  });
+
   test('re-uploading keeps the same link, views and reactions', async () => {
     const res = await ctx.app.request(`/api/pages/${id}`, { method: 'PUT', headers: bearer(), body: bundle({ 'index.html': '<title>고친 판</title><p>v2 %VIEWS%</p>' }) });
     assert.equal(res.status, 200);

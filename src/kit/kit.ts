@@ -17,6 +17,10 @@
 //     data-grow (같은 arena 안)        도망칠수록 커지는 버튼
 //     data-dodge-hint (같은 장면)      두 번 도망친 뒤 보이는 안내
 //   data-counter="6"                   %VIEWS%를 LED 숫자 6칸으로 그린다
+//
+//   kit.counts()                       방문자 모두가 함께 쌓은 숫자들 { like: 128 } (못 읽으면 null)
+//   kit.count('like', 5)               5를 더하고 새 합계를 받는다 (1~500, 못 보내면 null)
+//     개발 미리보기에서는 서버 대신 이 브라우저(localStorage)에 쌓는다
 
 type EnterFn = (scene: HTMLElement, index: number) => void;
 
@@ -50,6 +54,55 @@ function react(key: string, value: unknown = '') {
     body: JSON.stringify({ key, value: text }),
     keepalive: true,
   }).catch(() => {});
+}
+
+// ---------- 함께 쌓는 숫자 ----------
+
+const devCountKey = `kit-counts:${window.location.pathname}`;
+
+function devCounts(): Record<string, number> {
+  try {
+    return JSON.parse(window.localStorage.getItem(devCountKey) ?? '{}') as Record<string, number>;
+  } catch {
+    return {};
+  }
+}
+
+async function counts(): Promise<Record<string, number> | null> {
+  if (!pageId) return devCounts();
+  try {
+    const res = await fetch(`/h/${pageId}/counts`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return ((await res.json()) as { counts: Record<string, number> }).counts;
+  } catch {
+    return null;
+  }
+}
+
+async function count(key: string, add: number): Promise<number | null> {
+  const n = Math.min(500, Math.max(1, Math.round(add)));
+  if (!pageId) {
+    const all = devCounts();
+    all[key] = (all[key] ?? 0) + n;
+    try {
+      window.localStorage.setItem(devCountKey, JSON.stringify(all));
+    } catch {
+      // 미리보기라 못 남겨도 된다
+    }
+    return all[key];
+  }
+  try {
+    const res = await fetch(`/h/${pageId}/count`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key, add: n }),
+      keepalive: true,
+    });
+    if (!res.ok) return null;
+    return ((await res.json()) as { total: number }).total;
+  } catch {
+    return null;
+  }
 }
 
 // ---------- 무대와 장면 ----------
@@ -346,6 +399,8 @@ const kit = {
   scenes,
   confetti,
   react,
+  counts,
+  count,
   reset: resetScene,
   /** 장면에 들어갈 때마다 부른다. 들어간 장면과 번호를 받는다. */
   onEnter(fn: EnterFn) {

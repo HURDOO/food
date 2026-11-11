@@ -1,5 +1,5 @@
 // /data 아래 파일 저장소.
-//   pages/<id>/meta.json     제목, 조회수, 반응
+//   pages/<id>/meta.json     제목, 조회수, 반응, 함께 쌓는 숫자(좋아요 등)
 //   pages/<id>/b-<v>/...     페이지 파일 묶음 (다시 올릴 때마다 새 폴더로 갈아 끼운다)
 //   session.key              관리자 세션 서명용 무작위 키
 // 쓰기는 동기 I/O + 임시 파일 rename이라 요청끼리 섞이지 않고, 중간에 꺼져도 반쯤 쓴 파일이 남지 않는다.
@@ -14,6 +14,8 @@ export const ID_PATTERN = /^[A-Za-z0-9]{10}$/;
 export const REACTION_KEY = /^[a-z0-9_-]{1,24}$/;
 export const MAX_REACTION_KEYS = 20;
 export const MAX_REACTION_VALUE = 80;
+/** 한 번에 더할 수 있는 최대치. 연타를 모아 보내도 이 안에 든다. */
+export const MAX_COUNT_STEP = 500;
 
 export function randomId(length: number): string {
   const bytes = randomBytes(length * 2);
@@ -40,6 +42,8 @@ export interface PageMeta {
   bundle: string;
   views: number;
   reactions: Record<string, Reaction>;
+  /** 방문자 모두가 함께 쌓는 숫자. 예전 페이지에는 없을 수 있다. */
+  counts?: Record<string, number>;
 }
 
 export class FileStore {
@@ -150,6 +154,17 @@ export class FileStore {
       const reaction: Reaction = { value: clean, count: (prev?.count ?? 0) + 1, firstAt: prev?.firstAt ?? stamp, lastAt: stamp };
       return { ...m, reactions: { ...m.reactions, [key]: reaction } };
     });
+  }
+
+  /** 함께 쌓는 숫자에 더하고 새 합계를 돌려준다. 키 규칙과 개수 제한은 반응과 같다. */
+  addCount(id: string, key: string, add: number): number | null {
+    if (!REACTION_KEY.test(key) || !Number.isInteger(add) || add < 1 || add > MAX_COUNT_STEP) return null;
+    const meta = this.mutate(id, (m) => {
+      const counts = m.counts ?? {};
+      if (counts[key] === undefined && Object.keys(counts).length >= MAX_REACTION_KEYS) return m;
+      return { ...m, counts: { ...counts, [key]: (counts[key] ?? 0) + add } };
+    });
+    return meta?.counts?.[key] ?? null;
   }
 
   private mutate(id: string, fn: (m: PageMeta) => PageMeta): PageMeta | null {
