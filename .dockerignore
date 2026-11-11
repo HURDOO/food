@@ -11,3 +11,4 @@ test
 .env*
 *.log
 .DS_Store
+password.txt

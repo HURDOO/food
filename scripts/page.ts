@@ -4,7 +4,7 @@
 //
 // 올릴 때 사진은 긴 쪽 1600px로 줄이고(macOS sips) 위치정보를 지운다. kit.js·kit.css는 지금 빌드본을 같이 넣는다.
 // 같은 서버에 다시 올리면 같은 주소를 유지한다 (pages/<이름>/.push.json에 서버별 페이지 id를 적어 둔다).
-// 비밀번호: 로컬·내부망 개발 서버는 'dev', 그 밖의 서버는 macOS 키체인(서비스 food-admin, 계정 = 서버 호스트)에서 읽는다.
+// 비밀번호: 로컬·내부망 개발 서버는 'dev', 그 밖의 서버는 프로젝트 폴더의 password.txt(Git·Docker 제외)에서 읽는다.
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -105,19 +105,23 @@ function collect(dir: string): BundleFile[] {
 const isDevHost = (host: string) =>
   host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || /^(10|127)\.\d+\.\d+\.\d+$/.test(host) || /^192\.168\.\d+\.\d+$/.test(host) || /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(host);
 
+const PASSWORD_FILE = join(ROOT, 'password.txt');
+
 function passwordFor(target: URL): string {
   if (isDevHost(target.hostname)) return 'dev';
+  let password = '';
   try {
-    return execFileSync('security', ['find-generic-password', '-s', 'food-admin', '-a', target.host, '-w'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).replace(/\n$/, '');
+    password = readFileSync(PASSWORD_FILE, 'utf8').trim();
   } catch {
+    // 아래에서 안내한다
+  }
+  if (!password) {
     fail(
-      `키체인에 ${target.host} 관리자 비밀번호가 없어요. 터미널에서 한 번만 저장해 주세요 (입력은 화면에 안 보여요):\n` +
-        `  security add-generic-password -s food-admin -a ${target.host} -w`,
+      `password.txt가 없거나 비어 있어요. 프로젝트 폴더에 운영 관리자 비밀번호(deployd Secrets의 ADMIN_PASSWORD) 한 줄을 넣어 주세요.\n` +
+        `  이 파일은 Git·Docker에서 빠지고, 값은 화면에 출력하지 않아요.`,
     );
   }
+  return password;
 }
 
 async function upload(target: URL, password: string, files: BundleFile[], id: string | undefined) {
